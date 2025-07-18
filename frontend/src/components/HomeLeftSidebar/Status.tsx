@@ -1,4 +1,4 @@
-import { StatusProps } from '@/types/HomeRightSidebar';
+import { StatusProps } from '@/types/HomeLeftSidebar';
 
 export default function Status({ 
   selectedJob, selectedDataset 

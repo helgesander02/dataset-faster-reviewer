@@ -6,10 +6,11 @@ import { DatasetSectionProps } from '@/types/HomeLeftSidebar';
 
 import DatasetGrid from './DatasetGrid';
 import Pagination from './DatasetPagination';
+import Status from './Status';
 
 
 export function DatasetSection({
-  currentPagenation, currentDatasets, selectedDataset,
+  currentPagenation, currentDatasets, selectedDataset, selectedJob,
   onDatasetSelect, onPrevious, onNext
 }: DatasetSectionProps) {
   
@@ -22,7 +23,7 @@ export function DatasetSection({
         selectedDataset   = {selectedDataset}
         onDatasetSelect   = {onDatasetSelect}
       />
-
+      <Status selectedJob={selectedJob} selectedDataset={selectedDataset} />
       {currentDatasets.length > 0 && (
         <Pagination
           currentPagenation = {currentPagenation}

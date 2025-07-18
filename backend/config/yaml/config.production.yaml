@@ -1,0 +1,26 @@
+server:
+  port: ""
+  host: ""
+
+static:
+  folder: ""
+
+database:
+  host: ""
+  port: ""
+  username: ""
+  password: ""
+  database: ""
+
+#logging:
+#  level: "info"
+#  format: "json"
+#
+#cors:
+#  allowed_origins: ["https://yourdomain.com"]
+#  allowed_methods: ["GET", "POST", "PUT", "DELETE"]
+#  allowed_headers: ["Content-Type", "Authorization"]
+#
+#security:
+#  rate_limit: 1000
+#  timeout: 30 

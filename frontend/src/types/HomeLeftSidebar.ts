@@ -26,6 +26,7 @@ export interface DatasetSectionProps {
     currentPagenation:      number; 
     currentDatasets:        string[]; 
     selectedDataset:        string;
+    selectedJob:            string;
     onDatasetSelect:        (dataset: string) => void; 
     onPrevious:             () => void; 
     onNext:                 () => void;
@@ -47,4 +48,10 @@ export interface PaginationProps {
     datasetsPerPage:        number;
     onPrevious:             () => void;
     onNext:                 () => void;
+}
+
+// Status.ts
+export interface StatusProps {
+    selectedJob:      string | null;
+    selectedDataset:  string | null;
 }

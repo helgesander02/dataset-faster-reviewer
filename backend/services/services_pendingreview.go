@@ -1,43 +1,59 @@
 package services
 
-
 import (
 	"log"
-    "encoding/json"
 	"backend/models"
 )
 
+func (dm *DataManager) SavePendingReviewData(body interface{}) int {
+	itemsData, ok := body.([]interface{})
+	if !ok {
+		log.Println("SavePendingReview: invalid data format")
+		return 0
+	}
 
-func (dm *DataManager) SavePendingReviewData(body *json.Decoder) int {
-    items := models.NewPendingReviewItems()
-    if err := body.Decode(&items); err != nil {
-        log.Printf("SavePendingReview: decode error: %v", err)
-        log.Println("Invalid request format")
-        return 0 
-    }
+	var items []models.PendingReviewItem
+	for _, item := range itemsData {
+		itemMap, ok := item.(map[string]interface{})
+		if !ok {
+			continue
+		}
 
-    pending := models.NewPendingReview()
-    if len(items) == 0 {
-        log.Println("Empty list provided")
-        dm.PendingReviewData.MergePendingReviewItems(pending)
-        log.Println("SavePendingReview: cleaned up pending review items")
-        return -1
+		pendingItem := models.PendingReviewItem{
+			Job:       getString(itemMap, "job"),
+			Dataset:   getString(itemMap, "dataset"),
+			ImageName: getString(itemMap, "imageName"),
+			ImagePath: getString(itemMap, "imagePath"),
+		}
+		items = append(items, pendingItem)
+	}
 
-    } else {
-        pending.Items = items
-        dm.PendingReviewData.MergePendingReviewItems(pending)
-        log.Println(dm.PendingReviewData)
-        log.Printf("SavePendingReview: loaded %d items across %d jobs", len(items), len(pending.Items))
-        return len(items) 
+	pending := models.NewPendingReview()
+	if len(items) == 0 {
+		log.Println("Empty list provided")
+		dm.PendingReviewData.MergePendingReviewItems(pending)
+		log.Println("SavePendingReview: cleaned up pending review items")
+		return -1
+	}
 
-    }
+	pending.Items = items
+	dm.PendingReviewData.MergePendingReviewItems(pending)
+	log.Printf("SavePendingReview: loaded %d items", len(items))
+	return len(items)
 }
 
+func getString(m map[string]interface{}, key string) string {
+	if val, ok := m[key]; ok {
+		if str, ok := val.(string); ok {
+			return str
+		}
+	}
+	return ""
+}
 
 func (dm *DataManager) GetPendingReviewItems() []models.PendingReviewItem {
 	return dm.PendingReviewData.Items
 }
-
 
 func (dm *DataManager) ClearPendingReviewData() {
 	dm.PendingReviewData.ClearPendingReviewItems()

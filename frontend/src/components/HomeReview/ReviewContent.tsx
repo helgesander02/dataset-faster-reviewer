@@ -12,7 +12,6 @@ export function ReviewContent({
 }: ReviewContentProps) {
 
   const hasImages = reviewData && reviewData.items.length > 0;
-
   return (
     <div className="home-review-content">
       {loading ? (

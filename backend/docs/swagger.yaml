@@ -1,0 +1,265 @@
+info:
+  contact: {}
+paths:
+  /api/approvedRemove:
+    post:
+      description: Remove images that have been approved from pending review
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Remove approved images
+      tags:
+      - review
+  /api/folder-structure:
+    get:
+      description: Returns the folder structure data
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema: {}
+      summary: Get folder structure
+      tags:
+      - folder
+  /api/getAllPages:
+    get:
+      description: Returns all page details for a given job
+      parameters:
+      - description: Job name
+        in: query
+        name: job
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get all pages for a job
+      tags:
+      - pages
+  /api/getBase64Images:
+    get:
+      description: Returns base64-encoded images for a given job, dataset, pageIndex,
+        and pageNumber
+      parameters:
+      - description: Job name
+        in: query
+        name: job
+        required: true
+        type: string
+      - description: Dataset name
+        in: query
+        name: dataset
+        required: true
+        type: string
+      - description: Page index
+        in: query
+        name: pageIndex
+        required: true
+        type: integer
+      - description: Page number
+        in: query
+        name: pageNumber
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get base64 images for a dataset page
+      tags:
+      - images
+  /api/getDatasets:
+    get:
+      description: Returns a list of all dataset names for a given job
+      parameters:
+      - description: Job name
+        in: query
+        name: job
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get all datasets for a job
+      tags:
+      - datasets
+  /api/getImages:
+    get:
+      description: Returns a list of all images for a given job and dataset
+      parameters:
+      - description: Job name
+        in: query
+        name: job
+        required: true
+        type: string
+      - description: Dataset name
+        in: query
+        name: dataset
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get all images for a dataset
+      tags:
+      - images
+  /api/getJobs:
+    get:
+      description: Returns a list of all job names
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get all jobs
+      tags:
+      - jobs
+  /api/getPendingReview:
+    get:
+      description: Get all pending review data
+      parameters:
+      - description: Flatten the result
+        in: query
+        name: flatten
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema: {}
+      summary: Get pending review
+      tags:
+      - review
+  /api/savePendingReview:
+    post:
+      consumes:
+      - application/json
+      description: Save pending review data
+      parameters:
+      - description: Pending review data
+        in: body
+        name: body
+        required: true
+        schema: {}
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Save pending review
+      tags:
+      - review
+  /api/unapprovedRemove:
+    post:
+      description: Clear all unapproved pending review data
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Clear unapproved pending review data
+      tags:
+      - review
+swagger: "2.0"

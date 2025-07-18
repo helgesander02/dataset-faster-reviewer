@@ -7,7 +7,6 @@ import { useJobDataset } from '../JobDatasetContext';
 import ReviewButton from './ReviewButton';
 import FileChangeLog from './FileChangeLog';
 import SaveButton from './SaveButton';
-import Status from './Status';
 import HomeReview from '../HomeReview';
 
 
@@ -37,7 +36,6 @@ export default function RightSidebar() {
       <ReviewButton onReview={handleReview} loading={loading} />
       <FileChangeLog groupedImages={groupedImages} cachedImages={cachedImages} />
       <div className="mt-auto">
-        <Status selectedJob={selectedJob} selectedDataset={selectedDataset} />
         <SaveButton 
           onSave={handleSave} 
           loading={loading} 

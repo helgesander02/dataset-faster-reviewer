@@ -7,6 +7,25 @@ import { HomeReviewProps } from '@/types/HomeReview';
 import { useHomeReview } from '@/hooks/useRightSidebar/useReview';
 import '@/styles/HomeReview.css';
 
+/*
+ * HomeReview component for the HomeRighSidebar page.
+ * This component displays a modal for reviewing images
+ * and allows users to select, deselect, and save images.
+ * 
+ * Props:
+ * - isOpen:                boolean - Indicates if the review modal is open.
+ * - onClose:               function - Callback to close the review modal.
+ * - loading:               boolean - Indicates if the review data is being loaded. 
+ * - reviewData:            object - Contains the data for the images to be reviewed.
+ * - error:                 string - Contains any error message if the review data fails to load.
+ * - selectedImages:        Set - Contains the currently selected images.
+ * - saving:                boolean - Indicates if the save operation is in progress.
+ * - fetchPendingReview:    function - Function to fetch the pending review data.
+ * - saveToPendingReview:   function - Function to save the selected images.
+ * - toggleImageSelection:  function - Function to toggle the selection of an image.
+ * - selectAllImages:       function - Function to select all images.
+ * - deselectAllImages:     function - Function to deselect all images. 
+ */
 export default function HomeReview({ 
   isOpen, onClose 
 }: HomeReviewProps) {

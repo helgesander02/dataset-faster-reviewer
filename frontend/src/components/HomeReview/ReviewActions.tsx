@@ -1,23 +1,11 @@
 "use client";
 
 import { Save, Loader2 } from 'lucide-react';
-
-interface ReviewActionsProps {
-  selectedCount: number;
-  totalCount: number;
-  saving: boolean;
-  onSelectAll: () => void;
-  onDeselectAll: () => void;
-  onSave: () => void;
-}
+import { ReviewActionsProps } from '@/types/HomeReview';
 
 export function ReviewActions({ 
-  selectedCount, 
-  totalCount, 
-  saving, 
-  onSelectAll, 
-  onDeselectAll, 
-  onSave 
+  selectedCount, totalCount, saving, 
+  onSelectAll, onDeselectAll, onSave 
 }: ReviewActionsProps) {
   return (
     <div className="home-review-footer">

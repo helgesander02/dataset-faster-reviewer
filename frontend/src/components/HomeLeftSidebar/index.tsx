@@ -48,12 +48,12 @@ export default function LeftSidebar() {
           currentPagenation = {currentPagenation}
           currentDatasets   = {currentDatasets}
           selectedDataset   = {selectedDataset}
+          selectedJob       = {selectedJob}
           onDatasetSelect   = {handleDatasetSelect}
           onPrevious        = {previousPage}
           onNext            = {nextPage}
         />
       )}
-      
       {loading && <LoadingIndicator />}
     </div>
   );
