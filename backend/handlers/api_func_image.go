@@ -130,29 +130,18 @@ func (handle *Handle) GetBase64Images(c *gin.Context) {
 		return
 	}
 	
+	// 使用新的 cache API
 	cachedImages, exists := handle.DM.GetImagesCache(jobName, pageIndex, pageNumber)
-	if exists {
-		c.JSON(http.StatusOK, gin.H{
-			"max_page": handle.DM.ImagesPerPageCache.MaxPage,
-			"images":   cachedImages,
-		})
-		return
-	}
-	
-	if handle.DM.ImagesPerPageCache.MaxPage <= pageIndex {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Page index out of range"})
-		return
-	}
-	
-	handle.DM.GetBase64ImagesCache(jobName, pageIndex)
-	cachedImages, exists = handle.DM.GetImagesCache(jobName, pageIndex, pageNumber)
 	if !exists {
-		c.JSON(http.StatusNotFound, gin.H{"error": "No images found for the specified job and dataset"})
+		c.JSON(http.StatusNotFound, gin.H{"error": "No images found for the specified job and page"})
 		return
 	}
+	
+	// 取得最大頁數
+	maxPage := handle.DM.GetJobMaxPages(jobName)
 	
 	c.JSON(http.StatusOK, gin.H{
-		"max_page": handle.DM.ImagesPerPageCache.MaxPage,
+		"max_page": maxPage,
 		"images":   cachedImages,
 	})
 }
@@ -178,7 +167,7 @@ func (handle *Handle) GetAllPages(c *gin.Context) {
 		return
 	}
 	
-	pages := handle.DM.GetAllPageDetail()
+	pages := handle.DM.GetJobPageDetail(jobName)
 	c.JSON(http.StatusOK, gin.H{
 		"total_pages": len(pages),
 		"pages":       pages,

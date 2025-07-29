@@ -4,8 +4,8 @@ package services
 import (
 	"log"
 	"os"
-	"backend/models"
-	"backend/utils"
+	"backend/src/models"
+	"backend/src/utils"
 )
 
 

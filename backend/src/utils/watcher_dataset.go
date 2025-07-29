@@ -4,7 +4,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"backend/models"
+	"backend/src/models"
 )
 
 

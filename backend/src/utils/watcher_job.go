@@ -6,7 +6,7 @@ import (
 	"sync"
 	"path/filepath"
 	"github.com/fsnotify/fsnotify"
-	"backend/models"
+	"backend/src/models"
 )
 
 var jobMu sync.Mutex

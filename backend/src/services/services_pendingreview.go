@@ -2,7 +2,7 @@ package services
 
 import (
 	"log"
-	"backend/models"
+	"backend/src/models"
 )
 
 func (dm *DataManager) SavePendingReviewData(body interface{}) int {

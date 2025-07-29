@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"backend/services"
+	"backend/src/services"
 )
 
 type Handle struct {
