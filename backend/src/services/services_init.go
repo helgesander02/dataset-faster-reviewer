@@ -3,6 +3,7 @@ package services
 import (
 	"backend/src/cache"
 	"backend/src/models"
+	"backend/src/utils"
 	"log"
 )
 
@@ -14,12 +15,19 @@ type DataManager struct {
 }
 
 func NewDataManager(root string) *DataManager {
-	return &DataManager{
+	dm := &DataManager{
 		ImageRoot:         root,
 		ParentData:        models.NewParentData(),
-		CacheManager:      cache.NewCacheManager(),
 		PendingReviewData: models.NewPendingReview(),
 	}
+	
+	// 建立 ImageProcessor
+	imageProcessor := utils.NewImageProcessor()
+	
+	// 建立 CacheManager，傳入 DataProvider 和 ImageProcessor
+	dm.CacheManager = cache.NewCacheManager(dm, imageProcessor)
+	
+	return dm
 }
 
 func (dm *DataManager) SetupServices() {
@@ -31,7 +39,8 @@ func (dm *DataManager) SetupServices() {
 		log.Println("Initialized ParentData")
 	}
 	if dm.CacheManager == nil {
-		dm.CacheManager = cache.NewCacheManager()
+		imageProcessor := utils.NewImageProcessor()
+		dm.CacheManager = cache.NewCacheManager(dm, imageProcessor)
 		log.Println("Initialized CacheManager")
 	}
 	if dm.PendingReviewData.Items == nil {

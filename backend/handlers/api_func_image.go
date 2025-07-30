@@ -1,3 +1,4 @@
+// handlers/api_func_image.go
 package handlers
 
 import (
@@ -95,21 +96,22 @@ func (handle *Handle) GetImages(c *gin.Context) {
 // @Tags         images
 // @Produce      json
 // @Param        job        query  string  true  "Job name"
-// @Param        dataset    query  string  true  "Dataset name"
+// @Param        dataset    query  string  true  "Dataset name (not used in cache, but kept for compatibility)"
 // @Param        pageIndex  query  int     true  "Page index"
-// @Param        pageNumber query  int     true  "Page number"
+// @Param        pageNumber query  int     true  "Page size (for initialization only)"
 // @Success      200  {object}  map[string]interface{}
 // @Failure      400  {object}  map[string]string
 // @Failure      404  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
 // @Router       /api/getBase64Images [get]
 func (handle *Handle) GetBase64Images(c *gin.Context) {
 	jobName := c.Query("job")
-	datasetName := c.Query("dataset")
+	//datasetName := c.Query("dataset") // 保留但不使用，為了向後兼容
 	pageIndexStr := c.Query("pageIndex")
 	pageNumberStr := c.Query("pageNumber")
 	
-	if jobName == "" || datasetName == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Missing job or dataset parameter"})
+	if jobName == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Missing job parameter"})
 		return
 	}
 	
@@ -130,15 +132,33 @@ func (handle *Handle) GetBase64Images(c *gin.Context) {
 		return
 	}
 	
-	// 使用新的 cache API
-	cachedImages, exists := handle.DM.GetImagesCache(jobName, pageIndex, pageNumber)
-	if !exists {
-		c.JSON(http.StatusNotFound, gin.H{"error": "No images found for the specified job and page"})
+	// 檢查快取是否存在，如果不存在則初始化
+	if !handle.DM.ImageCacheJobExists(jobName) {
+		if err := handle.DM.InitializeImagesCache(jobName, pageNumber); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": "Failed to initialize cache: " + err.Error(),
+			})
+			return
+		}
+	}
+	
+	// 使用新的 cache API (只需要 jobName 和 pageIndex)
+	cachedImages, err := handle.DM.GetImagesCache(jobName, pageIndex)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"error": "Failed to get images: " + err.Error(),
+		})
 		return
 	}
 	
 	// 取得最大頁數
-	maxPage := handle.DM.GetJobMaxPages(jobName)
+	maxPage, err := handle.DM.GetJobMaxPages(jobName)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to get max pages: " + err.Error(),
+		})
+		return
+	}
 	
 	c.JSON(http.StatusOK, gin.H{
 		"max_page": maxPage,
@@ -154,6 +174,7 @@ func (handle *Handle) GetBase64Images(c *gin.Context) {
 // @Success      200  {object}  map[string]interface{}
 // @Failure      400  {object}  map[string]string
 // @Failure      404  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
 // @Router       /api/getAllPages [get]
 func (handle *Handle) GetAllPages(c *gin.Context) {
 	jobName := c.Query("job")
@@ -163,11 +184,18 @@ func (handle *Handle) GetAllPages(c *gin.Context) {
 	}
 	
 	if !handle.DM.ImageCacheJobExists(jobName) {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Job not found"})
+		c.JSON(http.StatusNotFound, gin.H{"error": "Job cache not found"})
 		return
 	}
 	
-	pages := handle.DM.GetJobPageDetail(jobName)
+	pages, err := handle.DM.GetJobPageDetail(jobName)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to get page details: " + err.Error(),
+		})
+		return
+	}
+	
 	c.JSON(http.StatusOK, gin.H{
 		"total_pages": len(pages),
 		"pages":       pages,

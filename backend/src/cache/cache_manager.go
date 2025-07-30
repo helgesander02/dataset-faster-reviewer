@@ -10,10 +10,10 @@ type CacheManager struct {
 	Base64Cache *Base64Cache
 }
 
-func NewCacheManager() *CacheManager {
+func NewCacheManager(dataProvider DataProvider, imageProcessor ImageProcessor) *CacheManager {
 	return &CacheManager{
-		JobCache:    NewJobCache(3), // 最多快取 3 個 job
-		Base64Cache: NewBase64Cache(),
+		JobCache:    NewJobCache(3),
+		Base64Cache: NewBase64Cache(dataProvider, imageProcessor),
 	}
 }
 
@@ -39,16 +39,16 @@ func (cm *CacheManager) ClearJobCache() {
 }
 
 // Base64 Cache 相關方法
-func (cm *CacheManager) GetAllPageDetail(jobName string) map[int]string {
+func (cm *CacheManager) GetAllPageDetail(jobName string) (map[int]string, error) {
 	return cm.Base64Cache.GetAllPageDetail(jobName)
 }
 
-func (cm *CacheManager) InitialImagesCache(jobName string, pageNumber int, getDatasetsFn func(string) []string, getImagesFn func(string, string) []models.Image) {
-	cm.Base64Cache.InitialImagesCache(jobName, pageNumber, getDatasetsFn, getImagesFn)
+func (cm *CacheManager) InitializeImagesCache(jobName string, pageSize int) error {
+	return cm.Base64Cache.InitializeImagesCache(jobName, pageSize)
 }
 
-func (cm *CacheManager) GetImagesCache(jobName string, pageIndex int, pageNumber int, getDatasetsFn func(string) []string, getImagesFn func(string, string) []models.Image) (models.ImageItems, bool) {
-	return cm.Base64Cache.GetImagesCache(jobName, pageIndex, pageNumber, getDatasetsFn, getImagesFn)
+func (cm *CacheManager) GetImagesCache(jobName string, pageIndex int) (models.ImageItems, error) {
+	return cm.Base64Cache.GetImagesCache(jobName, pageIndex)
 }
 
 func (cm *CacheManager) ClearImagesCache(jobName string) {
@@ -57,6 +57,10 @@ func (cm *CacheManager) ClearImagesCache(jobName string) {
 
 func (cm *CacheManager) ImageCacheJobExists(jobName string) bool {
 	return cm.Base64Cache.ImageCacheJobExists(jobName)
+}
+
+func (cm *CacheManager) GetJobMaxPages(jobName string) (int, error) {
+	return cm.Base64Cache.GetMaxPages(jobName)
 }
 
 // 清理所有快取
@@ -70,13 +74,4 @@ func (cm *CacheManager) GetCacheStats() map[string]int {
 	return map[string]int{
 		"job_cache_items": cm.JobCache.ItemCount(),
 	}
-}
-
-// 新增：取得指定 job 的最大頁數
-func (cm *CacheManager) GetJobMaxPages(jobName string) int {
-	pageDetail := cm.Base64Cache.GetAllPageDetail(jobName)
-	if pageDetail == nil {
-		return 0
-	}
-	return len(pageDetail)
 }
