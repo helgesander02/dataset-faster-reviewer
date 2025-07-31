@@ -29,7 +29,7 @@ func NewImageProcessor() *ImageProcessor {
 
 func (ip *ImageProcessor) CompressToBase64(imgPath string) (string, error) {
 	log.Println("Processing image:", imgPath)
-	
+
 	file, err := os.Open(imgPath)
 	if err != nil {
 		return "", err

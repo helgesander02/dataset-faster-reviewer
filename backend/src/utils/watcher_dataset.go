@@ -1,15 +1,14 @@
 package utils
 
 import (
+	"backend/src/models_verify_viewer"
 	"log"
 	"os"
 	"path/filepath"
-	"backend/src/models"
 )
 
-
-func WatchJobDetails(root string, jobName string) models.Job {
-	jobData := models.NewJob(jobName)
+func WatchJobDetails(root string, jobName string) models_verify_viewer.Job {
+	jobData := models_verify_viewer.NewJob(jobName)
 	jobPath := filepath.Join(root, jobName)
 	_, err := os.Stat(jobPath)
 	if err != nil {
@@ -39,9 +38,8 @@ func WatchJobDetails(root string, jobName string) models.Job {
 	return jobData
 }
 
-
-func scanDataset(jobPath string, dataset os.DirEntry) models.Dataset {
-	datasetData := models.NewDataset(dataset.Name())
+func scanDataset(jobPath string, dataset os.DirEntry) models_verify_viewer.Dataset {
+	datasetData := models_verify_viewer.NewDataset(dataset.Name())
 	datasetPath := filepath.Join(jobPath, dataset.Name())
 	metas, err := os.ReadDir(datasetPath)
 	if err != nil {
@@ -61,8 +59,7 @@ func scanDataset(jobPath string, dataset os.DirEntry) models.Dataset {
 	return datasetData
 }
 
-
-func scanMeta(metaPath, metaName string, datasetData *models.Dataset) {
+func scanMeta(metaPath, metaName string, datasetData *models_verify_viewer.Dataset) {
 	if metaName == "image" {
 		images, err := os.ReadDir(metaPath)
 		if err != nil {
@@ -70,7 +67,7 @@ func scanMeta(metaPath, metaName string, datasetData *models.Dataset) {
 			return
 		}
 		scanImages(images, metaPath, datasetData)
-		
+
 	} else if metaName == "label" {
 		labels, err := os.ReadDir(metaPath)
 		if err != nil {
@@ -81,22 +78,20 @@ func scanMeta(metaPath, metaName string, datasetData *models.Dataset) {
 	}
 }
 
-
-func scanImages(images []os.DirEntry, metaPath string, datasetData *models.Dataset) {
+func scanImages(images []os.DirEntry, metaPath string, datasetData *models_verify_viewer.Dataset) {
 	for _, image := range images {
 		if !image.IsDir() && filepath.Ext(image.Name()) == ".jpg" {
 			imagePath := filepath.Join(metaPath, image.Name())
-			datasetData.Image = append(datasetData.Image, models.Image{Name: image.Name(), Path: imagePath})
+			datasetData.Image = append(datasetData.Image, models_verify_viewer.Image{Name: image.Name(), Path: imagePath})
 		}
 	}
 }
 
-
-func scanLabels(labels []os.DirEntry, metaPath string, datasetData *models.Dataset) {
+func scanLabels(labels []os.DirEntry, metaPath string, datasetData *models_verify_viewer.Dataset) {
 	for _, label := range labels {
 		if !label.IsDir() && filepath.Ext(label.Name()) == ".json" {
 			labelPath := filepath.Join(metaPath, label.Name())
-			datasetData.Label = append(datasetData.Label, models.Label{Name: label.Name(), Path: labelPath})
+			datasetData.Label = append(datasetData.Label, models_verify_viewer.Label{Name: label.Name(), Path: labelPath})
 		}
 	}
 }

@@ -1,8 +1,8 @@
 package services
 
 import (
+	"backend/src/models_verify_viewer"
 	"log"
-	"backend/src/models"
 )
 
 func (dm *DataManager) SavePendingReviewData(body interface{}) int {
@@ -12,14 +12,14 @@ func (dm *DataManager) SavePendingReviewData(body interface{}) int {
 		return 0
 	}
 
-	var items []models.PendingReviewItem
+	var items []models_verify_viewer.PendingReviewItem
 	for _, item := range itemsData {
 		itemMap, ok := item.(map[string]interface{})
 		if !ok {
 			continue
 		}
 
-		pendingItem := models.PendingReviewItem{
+		pendingItem := models_verify_viewer.PendingReviewItem{
 			Job:       getString(itemMap, "job"),
 			Dataset:   getString(itemMap, "dataset"),
 			ImageName: getString(itemMap, "imageName"),
@@ -28,7 +28,7 @@ func (dm *DataManager) SavePendingReviewData(body interface{}) int {
 		items = append(items, pendingItem)
 	}
 
-	pending := models.NewPendingReview()
+	pending := models_verify_viewer.NewPendingReview()
 	if len(items) == 0 {
 		log.Println("Empty list provided")
 		dm.PendingReviewData.MergePendingReviewItems(pending)
@@ -51,7 +51,7 @@ func getString(m map[string]interface{}, key string) string {
 	return ""
 }
 
-func (dm *DataManager) GetPendingReviewItems() []models.PendingReviewItem {
+func (dm *DataManager) GetPendingReviewItems() []models_verify_viewer.PendingReviewItem {
 	return dm.PendingReviewData.Items
 }
 

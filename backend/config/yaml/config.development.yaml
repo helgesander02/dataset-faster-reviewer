@@ -3,7 +3,7 @@ server:
   host: "localhost"
 
 static:
-  folder: "../example_root"
+  folder: "../example_root/image_root/unverlify"
 
 database:
   host: ""

@@ -1,7 +1,7 @@
 package services
 
 import (
-	"backend/src/models"
+	"backend/src/models_verify_viewer"
 	"log"
 )
 
@@ -10,7 +10,7 @@ func (dm *DataManager) InitializeImagesCache(jobName string, pageSize int) error
 	return dm.CacheManager.InitializeImagesCache(jobName, pageSize)
 }
 
-func (dm *DataManager) GetImagesCache(jobName string, pageIndex int) (models.ImageItems, error) {
+func (dm *DataManager) GetImagesCache(jobName string, pageIndex int) (models_verify_viewer.ImageItems, error) {
 	return dm.CacheManager.GetImagesCache(jobName, pageIndex)
 }
 
@@ -30,4 +30,12 @@ func (dm *DataManager) GetJobPageDetail(jobName string) (map[int]string, error) 
 
 func (dm *DataManager) GetJobMaxPages(jobName string) (int, error) {
 	return dm.CacheManager.GetJobMaxPages(jobName)
+}
+
+func (dm *DataManager) GetJobCache(jobName string) (models_verify_viewer.Job, bool) {
+	return dm.CacheManager.GetJobCache(jobName)
+}
+
+func (dm *DataManager) MergeJobCache(job models_verify_viewer.Job) {
+	dm.CacheManager.SetJobCache(job)
 }

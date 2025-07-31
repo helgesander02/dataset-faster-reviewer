@@ -1,27 +1,6 @@
-package models
+package models_verify_viewer
 
-import (
-	"log"
-)
-
-func NewPendingReview() PendingReview {
-	return PendingReview{
-		Items: []PendingReviewItem{},
-	}
-}
-
-func NewPendingReviewItem(job, dataset, image_name, image_path string) PendingReviewItem {
-	return PendingReviewItem{
-		Job:       job,
-		Dataset:   dataset,
-		ImageName: image_name,
-		ImagePath: image_path,
-	}
-}
-
-func NewPendingReviewItems() []PendingReviewItem {
-	return []PendingReviewItem{}
-}
+import "log"
 
 func (pr_old *PendingReview) MergePendingReviewItems(pr_new PendingReview) {
 	log.Printf("Merging %d new items into existing %d items", len(pr_new.Items), len(pr_old.Items))

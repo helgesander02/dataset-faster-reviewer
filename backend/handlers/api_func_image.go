@@ -4,6 +4,7 @@ package handlers
 import (
 	"net/http"
 	"strconv"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -14,7 +15,7 @@ import (
 // @Success      200  {object}  interface{}
 // @Router       /api/folder-structure [get]
 func (handle *Handle) FolderStructureHandler(c *gin.Context) {
-	data := handle.DM.ParentData
+	data := handle.DM.JobList
 	c.JSON(http.StatusOK, data)
 }
 
@@ -47,12 +48,12 @@ func (handle *Handle) GetDatasets(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Missing job parameter"})
 		return
 	}
-	
+
 	if !handle.DM.ParentDataJobExists(jobName) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Job not found"})
 		return
 	}
-	
+
 	datasetNames := handle.DM.GetParentDataAllDatasets(jobName)
 	c.JSON(http.StatusOK, gin.H{
 		"total_datasets": len(datasetNames),
@@ -73,17 +74,17 @@ func (handle *Handle) GetDatasets(c *gin.Context) {
 func (handle *Handle) GetImages(c *gin.Context) {
 	jobName := c.Query("job")
 	datasetName := c.Query("dataset")
-	
+
 	if jobName == "" || datasetName == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Missing job or dataset parameter"})
 		return
 	}
-	
+
 	if !handle.DM.ParentDataJobExists(jobName) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Job not found"})
 		return
 	}
-	
+
 	images := handle.DM.GetParentDataAllImages(jobName, datasetName)
 	c.JSON(http.StatusOK, gin.H{
 		"total_images": len(images),
@@ -109,29 +110,29 @@ func (handle *Handle) GetBase64Images(c *gin.Context) {
 	//datasetName := c.Query("dataset") // 保留但不使用，為了向後兼容
 	pageIndexStr := c.Query("pageIndex")
 	pageNumberStr := c.Query("pageNumber")
-	
+
 	if jobName == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Missing job parameter"})
 		return
 	}
-	
+
 	if !handle.DM.ParentDataJobExists(jobName) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Job not found"})
 		return
 	}
-	
+
 	pageIndex, err := strconv.Atoi(pageIndexStr)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid pageIndex parameter"})
 		return
 	}
-	
+
 	pageNumber, err := strconv.Atoi(pageNumberStr)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid pageNumber parameter"})
 		return
 	}
-	
+
 	// 檢查快取是否存在，如果不存在則初始化
 	if !handle.DM.ImageCacheJobExists(jobName) {
 		if err := handle.DM.InitializeImagesCache(jobName, pageNumber); err != nil {
@@ -141,7 +142,7 @@ func (handle *Handle) GetBase64Images(c *gin.Context) {
 			return
 		}
 	}
-	
+
 	// 使用新的 cache API (只需要 jobName 和 pageIndex)
 	cachedImages, err := handle.DM.GetImagesCache(jobName, pageIndex)
 	if err != nil {
@@ -150,7 +151,7 @@ func (handle *Handle) GetBase64Images(c *gin.Context) {
 		})
 		return
 	}
-	
+
 	// 取得最大頁數
 	maxPage, err := handle.DM.GetJobMaxPages(jobName)
 	if err != nil {
@@ -159,7 +160,7 @@ func (handle *Handle) GetBase64Images(c *gin.Context) {
 		})
 		return
 	}
-	
+
 	c.JSON(http.StatusOK, gin.H{
 		"max_page": maxPage,
 		"images":   cachedImages,
@@ -182,12 +183,12 @@ func (handle *Handle) GetAllPages(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Missing job parameter"})
 		return
 	}
-	
+
 	if !handle.DM.ImageCacheJobExists(jobName) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Job cache not found"})
 		return
 	}
-	
+
 	pages, err := handle.DM.GetJobPageDetail(jobName)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -195,7 +196,7 @@ func (handle *Handle) GetAllPages(c *gin.Context) {
 		})
 		return
 	}
-	
+
 	c.JSON(http.StatusOK, gin.H{
 		"total_pages": len(pages),
 		"pages":       pages,
