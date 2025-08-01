@@ -13,16 +13,7 @@ type PendingReviewItem struct {
 
 func NewPendingReview() PendingReview {
 	return PendingReview{
-		Items: []PendingReviewItem{},
-	}
-}
-
-func NewPendingReviewItem(job, dataset, image_name, image_path string) PendingReviewItem {
-	return PendingReviewItem{
-		Job:       job,
-		Dataset:   dataset,
-		ImageName: image_name,
-		ImagePath: image_path,
+		Items: NewPendingReviewItems(),
 	}
 }
 

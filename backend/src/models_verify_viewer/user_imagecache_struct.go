@@ -1,3 +1,4 @@
+// user_imagecache_struct.go
 package models_verify_viewer
 
 import (
@@ -9,12 +10,14 @@ import (
 type CacheManager struct {
 	JobCache    *JobCache
 	Base64Cache *Base64Cache
+	PageCache   *PageCache
 }
 
 func NewCacheManager(dataProvider DataProvider, imageProcessor ImageProcessor) *CacheManager {
 	return &CacheManager{
 		JobCache:    NewJobCache(3),
 		Base64Cache: NewBase64Cache(dataProvider, imageProcessor),
+		PageCache:   NewPageCache(dataProvider, imageProcessor),
 	}
 }
 

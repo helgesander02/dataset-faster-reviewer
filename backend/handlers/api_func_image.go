@@ -15,7 +15,7 @@ import (
 // @Success      200  {object}  interface{}
 // @Router       /api/folder-structure [get]
 func (handle *Handle) FolderStructureHandler(c *gin.Context) {
-	data := handle.DM.JobList
+	data := handle.JointServices.JobList
 	c.JSON(http.StatusOK, data)
 }
 
@@ -26,7 +26,7 @@ func (handle *Handle) FolderStructureHandler(c *gin.Context) {
 // @Success      200  {object}  map[string]interface{}
 // @Router       /api/getJobs [get]
 func (handle *Handle) GetJobs(c *gin.Context) {
-	jobNames := handle.DM.GetParentDataAllJobs()
+	jobNames := handle.JointServices.GetAllJobs()
 	c.JSON(http.StatusOK, gin.H{
 		"total_jobs": len(jobNames),
 		"job_names":  jobNames,
@@ -49,12 +49,12 @@ func (handle *Handle) GetDatasets(c *gin.Context) {
 		return
 	}
 
-	if !handle.DM.ParentDataJobExists(jobName) {
+	if !handle.JointServices.DataJobExists(jobName) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Job not found"})
 		return
 	}
 
-	datasetNames := handle.DM.GetParentDataAllDatasets(jobName)
+	datasetNames := handle.UserServices.GetAllDatasets(jobName)
 	c.JSON(http.StatusOK, gin.H{
 		"total_datasets": len(datasetNames),
 		"dataset_names":  datasetNames,
@@ -80,12 +80,12 @@ func (handle *Handle) GetImages(c *gin.Context) {
 		return
 	}
 
-	if !handle.DM.ParentDataJobExists(jobName) {
+	if !handle.JointServices.DataJobExists(jobName) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Job not found"})
 		return
 	}
 
-	images := handle.DM.GetParentDataAllImages(jobName, datasetName)
+	images := handle.UserServices.GetAllImages(jobName, datasetName)
 	c.JSON(http.StatusOK, gin.H{
 		"total_images": len(images),
 		"images":       images,
@@ -116,7 +116,7 @@ func (handle *Handle) GetBase64Images(c *gin.Context) {
 		return
 	}
 
-	if !handle.DM.ParentDataJobExists(jobName) {
+	if !handle.JointServices.DataJobExists(jobName) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Job not found"})
 		return
 	}
@@ -134,8 +134,8 @@ func (handle *Handle) GetBase64Images(c *gin.Context) {
 	}
 
 	// 檢查快取是否存在，如果不存在則初始化
-	if !handle.DM.ImageCacheJobExists(jobName) {
-		if err := handle.DM.InitializeImagesCache(jobName, pageNumber); err != nil {
+	if !handle.UserServices.ImageCacheJobExists(jobName) {
+		if err := handle.UserServices.InitializeImagesCache(jobName, pageNumber); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"error": "Failed to initialize cache: " + err.Error(),
 			})
@@ -144,7 +144,7 @@ func (handle *Handle) GetBase64Images(c *gin.Context) {
 	}
 
 	// 使用新的 cache API (只需要 jobName 和 pageIndex)
-	cachedImages, err := handle.DM.GetImagesCache(jobName, pageIndex)
+	cachedImages, err := handle.UserServices.GetImagesCache(jobName, pageIndex)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{
 			"error": "Failed to get images: " + err.Error(),
@@ -153,7 +153,7 @@ func (handle *Handle) GetBase64Images(c *gin.Context) {
 	}
 
 	// 取得最大頁數
-	maxPage, err := handle.DM.GetJobMaxPages(jobName)
+	maxPage, err := handle.UserServices.GetJobMaxPages(jobName)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": "Failed to get max pages: " + err.Error(),
@@ -184,12 +184,12 @@ func (handle *Handle) GetAllPages(c *gin.Context) {
 		return
 	}
 
-	if !handle.DM.ImageCacheJobExists(jobName) {
+	if !handle.UserServices.ImageCacheJobExists(jobName) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Job cache not found"})
 		return
 	}
 
-	pages, err := handle.DM.GetJobPageDetail(jobName)
+	pages, err := handle.UserServices.GetJobPageDetail(jobName)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": "Failed to get page details: " + err.Error(),

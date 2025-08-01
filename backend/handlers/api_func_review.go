@@ -1,9 +1,11 @@
 package handlers
 
 import (
+	"backend/src/services"
 	"log"
 	"net/http"
 	"os"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -23,14 +25,14 @@ func (handle *Handle) SavePendingReview(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON"})
 		return
 	}
-	
-	itemsLen := handle.DM.SavePendingReviewData(body)
+
+	itemsLen := handle.UserServices.SavePendingReviewData(body)
 	if itemsLen == 0 {
 		log.Println("Failed to save pending review data")
 		c.JSON(http.StatusInternalServerError, gin.H{"status": "fail"})
 		return
 	}
-	
+
 	c.JSON(http.StatusOK, gin.H{
 		"status": "success",
 		"count":  itemsLen,
@@ -46,13 +48,13 @@ func (handle *Handle) SavePendingReview(c *gin.Context) {
 // @Router       /api/getPendingReview [get]
 func (handle *Handle) GetPendingReview(c *gin.Context) {
 	flatten := c.DefaultQuery("flatten", "false") == "true"
-	
+
 	if flatten {
-		c.JSON(http.StatusOK, handle.DM.PendingReviewData)
+		c.JSON(http.StatusOK, handle.UserServices.PendingReviewData)
 		return
 	}
-	
-	c.JSON(http.StatusOK, handle.DM.PendingReviewData)
+
+	c.JSON(http.StatusOK, handle.UserServices.PendingReviewData)
 }
 
 // @Summary      Remove approved images
@@ -63,11 +65,11 @@ func (handle *Handle) GetPendingReview(c *gin.Context) {
 // @Failure      500  {object}  map[string]interface{}
 // @Router       /api/approvedRemove [post]
 func (handle *Handle) ApprovedRemove(c *gin.Context) {
-	items := handle.DM.GetPendingReviewItems()
+	items := handle.UserServices.GetPendingReviewItems()
 	var failedFiles []string
-	
+
 	for _, item := range items {
-		filePath := handle.DM.ImageRoot + "/" + item.Job + "/" + item.Dataset + "/" + item.ImagePath
+		filePath := services.ImageRoot + "/" + item.Job + "/" + item.Dataset + "/" + item.ImagePath
 		if err := os.Remove(filePath); err != nil {
 			log.Printf("Failed to remove file: %s, error: %v", filePath, err)
 			failedFiles = append(failedFiles, filePath)
@@ -94,7 +96,7 @@ func (handle *Handle) ApprovedRemove(c *gin.Context) {
 // @Success      200  {object}  map[string]string
 // @Router       /api/unapprovedRemove [post]
 func (handle *Handle) UnApprovedRemove(c *gin.Context) {
-	handle.DM.ClearPendingReviewData()
+	handle.UserServices.ClearPendingReviewData()
 	log.Println("PendingReviewData has been cleared.")
 	c.JSON(http.StatusOK, gin.H{"status": "success"})
 }

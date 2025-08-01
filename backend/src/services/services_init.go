@@ -6,58 +6,55 @@ import (
 	"log"
 )
 
-//type JointInformation struct {
-//	ImageRoot string
-//}
+var (
+	ImageRoot string
+)
 
-//type JointServices struct {
-//	JobList models_verify_viewer.JobList
-//}
+type JointServices struct {
+	JobList models_verify_viewer.JobList
+}
 
-//type UserServices struct {
-//	CacheManager      *cache.CacheManager
-//	CurrentPageData   models_verify_viewer.ImagesPerPageCache
-//	PendingReviewData models_verify_viewer.PendingReview
-//}
+func NewJointServices() *JointServices {
+	return &JointServices{
+		JobList: models_verify_viewer.NewJobList(),
+	}
+}
 
-type DataManager struct {
-	ImageRoot         string
-	JobList           models_verify_viewer.JobList
+type UserServices struct {
 	CacheManager      *models_verify_viewer.CacheManager
+	CurrentPageData   models_verify_viewer.ImagesPerPageCache
 	PendingReviewData models_verify_viewer.PendingReview
 }
 
-func NewDataManager(root string) *DataManager {
-	dm := &DataManager{
-		ImageRoot:         root,
-		JobList:           models_verify_viewer.NewJobList(),
+func NewUserServices() *UserServices {
+	us := &UserServices{
+		CurrentPageData:   models_verify_viewer.NewImagesPerPageCache(),
 		PendingReviewData: models_verify_viewer.NewPendingReview(),
 	}
 
-	// 建立 ImageProcessor
 	imageProcessor := utils.NewImageProcessor()
+	us.CacheManager = models_verify_viewer.NewCacheManager(us, imageProcessor)
 
-	// 建立 CacheManager，傳入 DataProvider 和 ImageProcessor
-	dm.CacheManager = models_verify_viewer.NewCacheManager(dm, imageProcessor)
-
-	return dm
+	return us
 }
 
-func (dm *DataManager) SetupServices() {
-	if dm.ImageRoot == "" {
+func CheckServicesStart(us *UserServices, js *JointServices) {
+	if ImageRoot == "" {
 		log.Println("Image root is not set")
-	}
-	if dm.JobList.Jobs == nil {
-		dm.JobList = models_verify_viewer.NewJobList()
+
+	} else if js.JobList.Jobs == nil {
 		log.Println("Initialized ParentData")
-	}
-	if dm.CacheManager == nil {
-		imageProcessor := utils.NewImageProcessor()
-		dm.CacheManager = models_verify_viewer.NewCacheManager(dm, imageProcessor)
+
+	} else if us.CacheManager == nil {
 		log.Println("Initialized CacheManager")
-	}
-	if dm.PendingReviewData.Items == nil {
-		dm.PendingReviewData = models_verify_viewer.NewPendingReview()
+
+	} else if us.CurrentPageData.Pages == nil {
+		log.Println("Initialized CurrentPageData")
+
+	} else if us.PendingReviewData.Items == nil {
 		log.Println("Initialized PendingReviewData")
+
+	} else {
+		log.Println("Anything is initialized")
 	}
 }

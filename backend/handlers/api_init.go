@@ -5,16 +5,19 @@ import (
 )
 
 type Handle struct {
-	DM *services.DataManager
+	UserServices  *services.UserServices
+	JointServices *services.JointServices
 }
 
 func NewHandle(root string) *Handle {
-	dm := services.NewDataManager(root)
-	dm.SetupServices()
+	services.ImageRoot = root
+	us := services.NewUserServices()
+	js := services.NewJointServices()
+	services.CheckServicesStart(us, js)
 
-	return &Handle{DM: dm}
+	return &Handle{UserServices: us, JointServices: js}
 }
 
 func (handle *Handle) SetupAPI() {
-	handle.DM.ConcurrentJobScanner()
+	handle.JointServices.ConcurrentJobScanner()
 }

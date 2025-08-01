@@ -5,37 +5,37 @@ import (
 	"log"
 )
 
-func (dm *DataManager) InitializeImagesCache(jobName string, pageSize int) error {
+func (us *UserServices) InitializeImagesCache(jobName string, pageSize int) error {
 	log.Printf("Initializing images cache for job: %s with page size: %d", jobName, pageSize)
-	return dm.CacheManager.InitializeImagesCache(jobName, pageSize)
+	return us.CacheManager.InitializeImagesCache(jobName, pageSize)
 }
 
-func (dm *DataManager) GetImagesCache(jobName string, pageIndex int) (models_verify_viewer.ImageItems, error) {
-	return dm.CacheManager.GetImagesCache(jobName, pageIndex)
+func (us *UserServices) GetImagesCache(jobName string, pageIndex int) (models_verify_viewer.ImageItems, error) {
+	return us.CacheManager.GetImagesCache(jobName, pageIndex)
 }
 
-func (dm *DataManager) ClearImagesCache(jobName string) error {
-	dm.CacheManager.ClearImagesCache(jobName)
+func (us *UserServices) ClearImagesCache(jobName string) error {
+	us.CacheManager.ClearImagesCache(jobName)
 	log.Printf("Cleared images cache for job: %s", jobName)
 	return nil
 }
 
-func (dm *DataManager) ImageCacheJobExists(jobName string) bool {
-	return dm.CacheManager.ImageCacheJobExists(jobName)
+func (us *UserServices) ImageCacheJobExists(jobName string) bool {
+	return us.CacheManager.ImageCacheJobExists(jobName)
 }
 
-func (dm *DataManager) GetJobPageDetail(jobName string) (map[int]string, error) {
-	return dm.CacheManager.GetAllPageDetail(jobName)
+func (us *UserServices) GetJobPageDetail(jobName string) (map[int]string, error) {
+	return us.CacheManager.GetAllPageDetail(jobName)
 }
 
-func (dm *DataManager) GetJobMaxPages(jobName string) (int, error) {
-	return dm.CacheManager.GetJobMaxPages(jobName)
+func (us *UserServices) GetJobMaxPages(jobName string) (int, error) {
+	return us.CacheManager.GetJobMaxPages(jobName)
 }
 
-func (dm *DataManager) GetJobCache(jobName string) (models_verify_viewer.Job, bool) {
-	return dm.CacheManager.GetJobCache(jobName)
+func (us *UserServices) GetJobCache(jobName string) (models_verify_viewer.Job, bool) {
+	return us.CacheManager.GetJobCache(jobName)
 }
 
-func (dm *DataManager) MergeJobCache(job models_verify_viewer.Job) {
-	dm.CacheManager.SetJobCache(job)
+func (us *UserServices) MergeJobCache(job models_verify_viewer.Job) {
+	us.CacheManager.SetJobCache(job)
 }

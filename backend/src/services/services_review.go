@@ -5,7 +5,7 @@ import (
 	"log"
 )
 
-func (dm *DataManager) SavePendingReviewData(body interface{}) int {
+func (us *UserServices) SavePendingReviewData(body interface{}) int {
 	itemsData, ok := body.([]interface{})
 	if !ok {
 		log.Println("SavePendingReview: invalid data format")
@@ -31,13 +31,13 @@ func (dm *DataManager) SavePendingReviewData(body interface{}) int {
 	pending := models_verify_viewer.NewPendingReview()
 	if len(items) == 0 {
 		log.Println("Empty list provided")
-		dm.PendingReviewData.MergePendingReviewItems(pending)
+		us.PendingReviewData.MergePendingReviewItems(pending)
 		log.Println("SavePendingReview: cleaned up pending review items")
 		return -1
 	}
 
 	pending.Items = items
-	dm.PendingReviewData.MergePendingReviewItems(pending)
+	us.PendingReviewData.MergePendingReviewItems(pending)
 	log.Printf("SavePendingReview: loaded %d items", len(items))
 	return len(items)
 }
@@ -51,10 +51,10 @@ func getString(m map[string]interface{}, key string) string {
 	return ""
 }
 
-func (dm *DataManager) GetPendingReviewItems() []models_verify_viewer.PendingReviewItem {
-	return dm.PendingReviewData.Items
+func (us *UserServices) GetPendingReviewItems() []models_verify_viewer.PendingReviewItem {
+	return us.PendingReviewData.Items
 }
 
-func (dm *DataManager) ClearPendingReviewData() {
-	dm.PendingReviewData.ClearPendingReviewItems()
+func (us *UserServices) ClearPendingReviewData() {
+	us.PendingReviewData.ClearPendingReviewItems()
 }
