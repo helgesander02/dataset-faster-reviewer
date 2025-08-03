@@ -7,8 +7,28 @@ import (
 	"path/filepath"
 )
 
-func WatchJobDetails(root string, jobName string) models_verify_viewer.Job {
-	jobData := models_verify_viewer.NewJob(jobName)
+func ConcurrentJobDetailsScanner(root string, jobName string) (models_verify_viewer.Job, bool) {
+	jobPath := root + "/" + jobName
+	_, err := os.Stat(jobPath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			log.Printf("Job directory does not exist: %s", jobPath)
+		} else {
+			log.Printf("Error accessing job directory: %v", err)
+		}
+
+		new_job := models_verify_viewer.NewJob()
+		new_job.FillJobName(jobName)
+		return new_job, false
+	}
+
+	current_job := watchJobDetails(root, jobName)
+	return current_job, true
+}
+
+func watchJobDetails(root string, jobName string) models_verify_viewer.Job {
+	jobData := models_verify_viewer.NewJob()
+	jobData.FillJobName(jobName)
 	jobPath := filepath.Join(root, jobName)
 	_, err := os.Stat(jobPath)
 	if err != nil {
@@ -39,7 +59,8 @@ func WatchJobDetails(root string, jobName string) models_verify_viewer.Job {
 }
 
 func scanDataset(jobPath string, dataset os.DirEntry) models_verify_viewer.Dataset {
-	datasetData := models_verify_viewer.NewDataset(dataset.Name())
+	datasetData := models_verify_viewer.NewDataset()
+	datasetData.FillDatasetName(dataset.Name())
 	datasetPath := filepath.Join(jobPath, dataset.Name())
 	metas, err := os.ReadDir(datasetPath)
 	if err != nil {

@@ -6,10 +6,11 @@ import (
 	"flag"
 	"log"
 
+	_ "backend/docs"
+
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/swaggo/http-swagger"
-	_ "backend/docs" 
+	httpSwagger "github.com/swaggo/http-swagger"
 )
 
 var cfg *config.Config
@@ -31,7 +32,6 @@ func init() {
 
 func main() {
 	handle := handlers.NewHandle(cfg.GetStaticFolder())
-	handle.SetupAPI()
 
 	r := gin.Default()
 	r.Use(cors.Default())

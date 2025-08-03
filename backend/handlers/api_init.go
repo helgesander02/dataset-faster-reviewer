@@ -13,11 +13,7 @@ func NewHandle(root string) *Handle {
 	services.ImageRoot = root
 	us := services.NewUserServices()
 	js := services.NewJointServices()
-	services.CheckServicesStart(us, js)
 
+	services.CheckServicesState(us, js)
 	return &Handle{UserServices: us, JointServices: js}
-}
-
-func (handle *Handle) SetupAPI() {
-	handle.JointServices.ConcurrentJobScanner()
 }

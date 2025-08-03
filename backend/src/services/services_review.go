@@ -20,10 +20,10 @@ func (us *UserServices) SavePendingReviewData(body interface{}) int {
 		}
 
 		pendingItem := models_verify_viewer.PendingReviewItem{
-			Job:       getString(itemMap, "job"),
-			Dataset:   getString(itemMap, "dataset"),
-			ImageName: getString(itemMap, "imageName"),
-			ImagePath: getString(itemMap, "imagePath"),
+			JobName:     getString(itemMap, "job"),
+			DatasetName: getString(itemMap, "dataset"),
+			ImageName:   getString(itemMap, "imageName"),
+			ImagePath:   getString(itemMap, "imagePath"),
 		}
 		items = append(items, pendingItem)
 	}

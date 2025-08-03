@@ -7,13 +7,13 @@ func (pr_old *PendingReview) MergePendingReviewItems(pr_new PendingReview) {
 
 	newItemsMap := make(map[string]bool)
 	for _, newitem := range pr_new.Items {
-		key := newitem.Job + "|" + newitem.Dataset + "|" + newitem.ImageName
+		key := newitem.JobName + "|" + newitem.DatasetName + "|" + newitem.ImageName
 		newItemsMap[key] = true
 	}
 
-	filteredOldItems := NewPendingReviewItems()
+	filteredOldItems := NewPendingReviewItemSet()
 	for _, oldItem := range pr_old.Items {
-		key := oldItem.Job + "|" + oldItem.Dataset + "|" + oldItem.ImageName
+		key := oldItem.JobName + "|" + oldItem.DatasetName + "|" + oldItem.ImageName
 		if newItemsMap[key] {
 			filteredOldItems = append(filteredOldItems, oldItem)
 		}
@@ -23,7 +23,7 @@ func (pr_old *PendingReview) MergePendingReviewItems(pr_new PendingReview) {
 	for _, newitem := range pr_new.Items {
 		found := false
 		for _, oldItem := range pr_old.Items {
-			if newitem.Job == oldItem.Job && newitem.Dataset == oldItem.Dataset && newitem.ImageName == oldItem.ImageName {
+			if newitem.JobName == oldItem.JobName && newitem.DatasetName == oldItem.DatasetName && newitem.ImageName == oldItem.ImageName {
 				found = true
 				break
 			}

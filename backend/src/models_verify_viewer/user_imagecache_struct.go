@@ -1,4 +1,3 @@
-// user_imagecache_struct.go
 package models_verify_viewer
 
 import (
@@ -8,52 +7,28 @@ import (
 )
 
 type CacheManager struct {
-	JobCache    *JobCache
-	Base64Cache *Base64Cache
-	PageCache   *PageCache
+	ImageCacheStore *cache.Cache
 }
 
-func NewCacheManager(dataProvider DataProvider, imageProcessor ImageProcessor) *CacheManager {
+type Base64ImageCache struct {
+	JobName        string            `json:"job_name"`
+	Base64ImageMap map[string]string `json:"image_map"`
+}
+
+// set a default expiration time of 30 minutes and cleanup interval of 10 minutes
+func NewCacheManager() *CacheManager {
 	return &CacheManager{
-		JobCache:    NewJobCache(3),
-		Base64Cache: NewBase64Cache(dataProvider, imageProcessor),
-		PageCache:   NewPageCache(dataProvider, imageProcessor),
+		ImageCacheStore: cache.New(30*time.Minute, 10*time.Minute),
 	}
 }
 
-type Base64Cache struct {
-	cache          *cache.Cache
-	dataProvider   DataProvider
-	imageProcessor ImageProcessor
-}
-
-func NewBase64Cache(dataProvider DataProvider, imageProcessor ImageProcessor) *Base64Cache {
-	c := cache.New(30*time.Minute, 10*time.Minute) // set a default expiration time of 30 minutes and cleanup interval of 10 minutes
-	return &Base64Cache{
-		cache:          c,
-		dataProvider:   dataProvider,
-		imageProcessor: imageProcessor,
+func NewBase64ImageCache() Base64ImageCache {
+	return Base64ImageCache{
+		JobName:        "",
+		Base64ImageMap: NewBase64ImageMap(),
 	}
 }
 
-type JobCache struct {
-	cache    *cache.Cache
-	maxItems int
-}
-
-func NewJobCache(maxItems int) *JobCache {
-	c := cache.New(1*time.Hour, 30*time.Minute) // set a default expiration time of 1 hour and cleanup interval of 30 minutes
-	return &JobCache{
-		cache:    c,
-		maxItems: maxItems,
-	}
-}
-
-type DataProvider interface {
-	GetDatasets(jobName string) []string
-	GetImages(jobName, datasetName string) []Image
-}
-
-type ImageProcessor interface {
-	CompressToBase64(imagePath string) (string, error)
+func NewBase64ImageMap() map[string]string {
+	return make(map[string]string)
 }

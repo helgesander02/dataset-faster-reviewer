@@ -1,179 +1,78 @@
-// user_imagecache_func.go
 package models_verify_viewer
 
 import (
-	"fmt"
 	"log"
 
 	"github.com/patrickmn/go-cache"
 )
 
-// Job Cache 相關方法
-func (cm *CacheManager) GetJobCache(jobName string) (Job, bool) {
-	return cm.JobCache.Get(jobName)
+// go-cache function
+func (cm *CacheManager) SetImageCacheStore(jobName string) {
+	cacheData := NewBase64ImageCache()
+	cacheData.FillJobName(jobName)
+
+	cm.ImageCacheStore.Set(jobName, cacheData, cache.DefaultExpiration)
 }
 
-func (cm *CacheManager) SetJobCache(job Job) {
-	cm.JobCache.Set(job)
+func (cm *CacheManager) UpdateImageCacheStore(jobName string, cacheData Base64ImageCache) {
+	cm.ImageCacheStore.Set(jobName, cacheData, cache.DefaultExpiration)
 }
 
-func (cm *CacheManager) DeleteJobCache(jobName string) {
-	cm.JobCache.Delete(jobName)
-}
-
-func (cm *CacheManager) JobCacheExists(jobName string) bool {
-	return cm.JobCache.Exists(jobName)
-}
-
-func (cm *CacheManager) ClearJobCache() {
-	cm.JobCache.Clear()
-}
-
-func (jc *JobCache) Get(jobName string) (Job, bool) {
-	data, found := jc.cache.Get(jobName)
-	if !found {
-		return Job{}, false
+func (cm *CacheManager) GetImageCacheStore(jobName string) (Base64ImageCache, bool) {
+	if data, found := cm.ImageCacheStore.Get(jobName); found {
+		if typedData, ok := data.(Base64ImageCache); ok {
+			return typedData, true
+		}
 	}
-
-	job, ok := data.(Job)
-	if !ok {
-		log.Printf("Invalid job data type in cache for job: %s", jobName)
-		jc.cache.Delete(jobName)
-		return Job{}, false
-	}
-
-	log.Printf("Job found in cache: %s", jobName)
-	return job, true
+	return Base64ImageCache{}, false
 }
 
-func (jc *JobCache) Set(job Job) {
-	// 檢查是否超過最大項目數
-	if jc.cache.ItemCount() >= jc.maxItems {
-		// 刪除最舊的項目
-		jc.evictOldest()
-	}
-
-	jc.cache.Set(job.Name, job, cache.DefaultExpiration)
-	log.Printf("Added job to cache: %s", job.Name)
-}
-
-func (jc *JobCache) Delete(jobName string) {
-	jc.cache.Delete(jobName)
-	log.Printf("Removed job from cache: %s", jobName)
-}
-
-func (jc *JobCache) Exists(jobName string) bool {
-	_, found := jc.cache.Get(jobName)
+func (cm *CacheManager) ExistsImageCacheStore(jobName string) bool {
+	_, found := cm.ImageCacheStore.Get(jobName)
 	return found
 }
 
-func (jc *JobCache) Clear() {
-	jc.cache.Flush()
-	log.Println("Cleared all job cache")
+func (cm *CacheManager) ClearImageCacheStore(jobName string) {
+	cm.ImageCacheStore.Delete(jobName)
+	log.Printf("Cleared cache for job: %s", jobName)
 }
 
-func (jc *JobCache) ItemCount() int {
-	return jc.cache.ItemCount()
+func (cm *CacheManager) CheckImageCacheStoreStats() {
+	itemCount := cm.ImageCacheStore.ItemCount()
+	log.Printf("Total cached jobs: %d", itemCount)
 }
 
-func (jc *JobCache) evictOldest() {
-	items := jc.cache.Items()
-	if len(items) == 0 {
+// base64 image cache functions
+func (base64image_cache *Base64ImageCache) FillJobName(new_job_name string) {
+	base64image_cache.JobName = new_job_name
+}
+
+func (base64image_cache *Base64ImageCache) FillBase64ImageMap(new_image_name, new_base64image_name string) {
+	_, exists := base64image_cache.Base64ImageMap[new_image_name]
+	if !exists {
+		base64image_cache.Base64ImageMap[new_image_name] = new_base64image_name
+		log.Printf("New image (%s) added to Base64ImageMap (%s).\n", new_image_name, new_base64image_name)
+	} else {
+		log.Println("Image name already exists in Base64ImageMap. Skipping insertion.")
+	}
+}
+
+func (base64image_cache *Base64ImageCache) SetBase64ImageCacheByImagePathSet(current_page_imagepath_set []string, current_page_base64image_set []string) {
+	if len(current_page_imagepath_set) != len(current_page_base64image_set) {
+		log.Println("Error: Image path set and Base64 image set lengths do not match.")
 		return
 	}
 
-	var oldestKey string
-	var oldestExpiration int64
-	first := true
-
-	for key, item := range items {
-		if first || item.Expiration < oldestExpiration {
-			oldestKey = key
-			oldestExpiration = item.Expiration
-			first = false
-		}
-	}
-
-	if oldestKey != "" {
-		jc.cache.Delete(oldestKey)
-		log.Printf("Evicted oldest job from cache: %s", oldestKey)
+	for idx, imagePath := range current_page_imagepath_set {
+		base64image_cache.FillBase64ImageMap(imagePath, current_page_base64image_set[idx])
 	}
 }
 
-// Page Cache 相關方法 - 委託給 PageCache
-func (cm *CacheManager) GetAllPageDetail(jobName string) (map[int]string, error) {
-	return cm.PageCache.GetAllPageDetail(jobName)
-}
-
-func (cm *CacheManager) InitializeImagesCache(jobName string, pageSize int) error {
-	return cm.PageCache.InitializeImagesCache(jobName, pageSize)
-}
-
-func (cm *CacheManager) GetImagesCache(jobName string, pageIndex int) (ImageItems, error) {
-	return cm.PageCache.GetImagesCache(jobName, pageIndex)
-}
-
-func (cm *CacheManager) ClearImagesCache(jobName string) {
-	cm.PageCache.ClearImagesCache(jobName)
-}
-
-func (cm *CacheManager) ImageCacheJobExists(jobName string) bool {
-	return cm.PageCache.ImageCacheJobExists(jobName)
-}
-
-func (cm *CacheManager) GetJobMaxPages(jobName string) (int, error) {
-	return cm.PageCache.GetMaxPages(jobName)
-}
-
-// Base64 Cache 相關方法
-func (bc *Base64Cache) ClearImagesCache(jobName string) {
-	bc.cache.Delete(jobName)
-	log.Printf("Cleared images cache for job: %s", jobName)
-}
-
-func (bc *Base64Cache) ImageCacheJobExists(jobName string) bool {
-	_, found := bc.cache.Get(jobName)
-	return found
-}
-
-// 清理所有快取
-func (cm *CacheManager) ClearAllCache() {
-	cm.JobCache.Clear()
-	cm.Base64Cache.cache.Flush()
-	log.Println("Cleared all caches")
-}
-
-// 取得快取統計資訊
-func (cm *CacheManager) GetCacheStats() map[string]int {
-	return map[string]int{
-		"job_cache_items":    cm.JobCache.ItemCount(),
-		"base64_cache_items": cm.Base64Cache.cache.ItemCount(),
+func (base64image_cache Base64ImageCache) GetBase64ImageCacheByImagePathSet(current_page_imagepath_set []string) []string {
+	var current_page_base64image_set []string
+	for _, imagePath := range current_page_imagepath_set {
+		current_page_base64image_set = append(current_page_base64image_set, base64image_cache.Base64ImageMap[imagePath])
 	}
-}
 
-type ErrCacheNotFound struct {
-	JobName string
-}
-
-func (e ErrCacheNotFound) Error() string {
-	return fmt.Sprintf("cache not found for job: %s", e.JobName)
-}
-
-type ErrInvalidCacheData struct {
-	JobName string
-}
-
-func (e ErrInvalidCacheData) Error() string {
-	return fmt.Sprintf("invalid cache data type for job: %s", e.JobName)
-}
-
-type ErrPageIndexOutOfRange struct {
-	JobName   string
-	PageIndex int
-	MaxPages  int
-}
-
-func (e ErrPageIndexOutOfRange) Error() string {
-	return fmt.Sprintf("page index %d out of range for job %s (max pages: %d)",
-		e.PageIndex, e.JobName, e.MaxPages)
+	return current_page_base64image_set
 }

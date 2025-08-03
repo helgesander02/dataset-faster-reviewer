@@ -5,18 +5,27 @@ type PendingReview struct {
 }
 
 type PendingReviewItem struct {
-	Job       string `json:"job"`
-	Dataset   string `json:"dataset"`
-	ImageName string `json:"imageName"`
-	ImagePath string `json:"imagePath"`
+	JobName     string `json:"item_job_name"`
+	DatasetName string `json:"item_dataset_name"`
+	ImageName   string `json:"item_image_name"`
+	ImagePath   string `json:"item_image_path"`
 }
 
 func NewPendingReview() PendingReview {
 	return PendingReview{
-		Items: NewPendingReviewItems(),
+		Items: NewPendingReviewItemSet(),
 	}
 }
 
-func NewPendingReviewItems() []PendingReviewItem {
+func NewPendingReviewItem() PendingReviewItem {
+	return PendingReviewItem{
+		JobName:     "",
+		DatasetName: "",
+		ImageName:   "",
+		ImagePath:   "",
+	}
+}
+
+func NewPendingReviewItemSet() []PendingReviewItem {
 	return []PendingReviewItem{}
 }

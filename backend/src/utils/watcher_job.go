@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"backend/src/models_verify_viewer"
 	"log"
 	"os"
 	"path/filepath"
@@ -12,15 +11,22 @@ import (
 
 var jobMu sync.Mutex
 
-func WatchJobs(root string, JobList *models_verify_viewer.JobList) {
+func ConcurrentJobScanner(root string, job_list *[]string) {
+	go watchJobs(root, job_list)
+	log.Printf("Watchers initialized for root directory: %s", root)
+}
+
+func watchJobs(root string, job_list *[]string) {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer watcher.Close()
 
+	// 初始化掃描
 	jobMu.Lock()
-	*JobList = *scanJobs(root)
+	jobs := scanJobs(root)
+	*job_list = jobs
 	jobMu.Unlock()
 
 	done := make(chan bool)
@@ -38,7 +44,8 @@ func WatchJobs(root string, JobList *models_verify_viewer.JobList) {
 					log.Println("Detected job level change:", event)
 
 					jobMu.Lock()
-					*JobList = *scanJobs(root)
+					jobs := scanJobs(root)
+					*job_list = jobs
 					jobMu.Unlock()
 				}
 			case err, ok := <-watcher.Errors:
@@ -57,22 +64,22 @@ func WatchJobs(root string, JobList *models_verify_viewer.JobList) {
 	<-done
 }
 
-func scanJobs(root string) *models_verify_viewer.JobList {
-	parent := models_verify_viewer.NewJobList()
-	jobs, err := os.ReadDir(root)
+func scanJobs(root string) []string {
+	var jobs []string
+	entries, err := os.ReadDir(root)
 	if err != nil {
 		log.Printf("Error reading root directory: %v", err)
-		return &parent
+		return jobs
 	}
 
-	for _, job := range jobs {
-		if !job.IsDir() {
+	for _, entry := range entries {
+		if !entry.IsDir() {
 			continue
 		}
-		parent.Jobs = append(parent.Jobs, job.Name())
+		jobs = append(jobs, entry.Name())
 	}
 
-	return &parent
+	return jobs
 }
 
 func isJobLevelChange(root string, path string) bool {

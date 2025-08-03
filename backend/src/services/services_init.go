@@ -15,30 +15,31 @@ type JointServices struct {
 }
 
 func NewJointServices() *JointServices {
-	return &JointServices{
+	JointServices := &JointServices{
 		JobList: models_verify_viewer.NewJobList(),
 	}
+
+	utils.ConcurrentJobScanner(ImageRoot, &JointServices.JobList.Jobs)
+	return JointServices
 }
 
 type UserServices struct {
 	CacheManager      *models_verify_viewer.CacheManager
-	CurrentPageData   models_verify_viewer.ImagesPerPageCache
+	CurrentPageData   models_verify_viewer.Pages
 	PendingReviewData models_verify_viewer.PendingReview
 }
 
 func NewUserServices() *UserServices {
 	us := &UserServices{
-		CurrentPageData:   models_verify_viewer.NewImagesPerPageCache(),
+		CacheManager:      models_verify_viewer.NewCacheManager(),
+		CurrentPageData:   models_verify_viewer.NewPages(),
 		PendingReviewData: models_verify_viewer.NewPendingReview(),
 	}
-
-	imageProcessor := utils.NewImageProcessor()
-	us.CacheManager = models_verify_viewer.NewCacheManager(us, imageProcessor)
 
 	return us
 }
 
-func CheckServicesStart(us *UserServices, js *JointServices) {
+func CheckServicesState(us *UserServices, js *JointServices) {
 	if ImageRoot == "" {
 		log.Println("Image root is not set")
 
@@ -48,7 +49,7 @@ func CheckServicesStart(us *UserServices, js *JointServices) {
 	} else if us.CacheManager == nil {
 		log.Println("Initialized CacheManager")
 
-	} else if us.CurrentPageData.Pages == nil {
+	} else if us.CurrentPageData.PageItems == nil {
 		log.Println("Initialized CurrentPageData")
 
 	} else if us.PendingReviewData.Items == nil {

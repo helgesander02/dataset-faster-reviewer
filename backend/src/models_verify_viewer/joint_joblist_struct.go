@@ -8,6 +8,10 @@ type JobList struct {
 
 func NewJobList() JobList {
 	return JobList{
-		Jobs: []string{},
+		Jobs: NewJobsSet(),
 	}
+}
+
+func NewJobsSet() []string {
+	return []string{}
 }

@@ -9,34 +9,38 @@ package models_verify_viewer
 //	   |- label
 
 type Job struct {
-	Name     string    `json:"name"`
-	Datasets []Dataset `json:"datasets"`
+	Name     string    `json:"job_name"`
+	Datasets []Dataset `json:"job_datasets"`
 }
 
-func NewJob(job_name string) Job {
+func NewJob() Job {
 	return Job{
-		Name:     job_name,
-		Datasets: []Dataset{},
+		Name:     "",
+		Datasets: NewDatasetSet(),
 	}
 }
 
 type Dataset struct {
-	Name  string  `json:"name"`
-	Image []Image `json:"images"`
-	Label []Label `json:"labels"`
+	Name  string  `json:"dataset_name"`
+	Image []Image `json:"dataset_images"`
+	Label []Label `json:"dataset_labels"`
 }
 
-func NewDataset(dataset_name string) Dataset {
+func NewDataset() Dataset {
 	return Dataset{
-		Name:  dataset_name,
-		Image: []Image{},
-		Label: []Label{},
+		Name:  "",
+		Image: NewImageSet(),
+		Label: NewLabelSet(),
 	}
 }
 
+func NewDatasetSet() []Dataset {
+	return []Dataset{}
+}
+
 type Image struct {
-	Name string `json:"name"`
-	Path string `json:"path"`
+	Name string `json:"image_name"`
+	Path string `json:"image_path"`
 }
 
 func NewImage(image_name string, image_path string) Image {
@@ -46,9 +50,13 @@ func NewImage(image_name string, image_path string) Image {
 	}
 }
 
+func NewImageSet() []Image {
+	return []Image{}
+}
+
 type Label struct {
-	Name string `json:"name"`
-	Path string `json:"path"`
+	Name string `json:"label_name"`
+	Path string `json:"label_path"`
 }
 
 func NewLabel(label_name string, label_path string) Label {
@@ -56,4 +64,8 @@ func NewLabel(label_name string, label_path string) Label {
 		Name: label_name,
 		Path: label_path,
 	}
+}
+
+func NewLabelSet() []Label {
+	return []Label{}
 }

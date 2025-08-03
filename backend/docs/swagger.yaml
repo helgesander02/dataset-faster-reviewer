@@ -1,38 +1,6 @@
 info:
   contact: {}
 paths:
-  /api/approvedRemove:
-    post:
-      description: Remove images that have been approved from pending review
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties: true
-            type: object
-      summary: Remove approved images
-      tags:
-      - review
-  /api/folder-structure:
-    get:
-      description: Returns the folder structure data
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema: {}
-      summary: Get folder structure
-      tags:
-      - folder
   /api/getAllPages:
     get:
       description: Returns all page details for a given job
@@ -62,92 +30,18 @@ paths:
             additionalProperties:
               type: string
             type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
       summary: Get all pages for a job
       tags:
       - pages
-  /api/getBase64Images:
-    get:
-      description: Returns base64-encoded images for a given job, dataset, pageIndex,
-        and pageNumber
-      parameters:
-      - description: Job name
-        in: query
-        name: job
-        required: true
-        type: string
-      - description: Dataset name
-        in: query
-        name: dataset
-        required: true
-        type: string
-      - description: Page index
-        in: query
-        name: pageIndex
-        required: true
-        type: integer
-      - description: Page number
-        in: query
-        name: pageNumber
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            additionalProperties: true
-            type: object
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "404":
-          description: Not Found
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Get base64 images for a dataset page
-      tags:
-      - images
-  /api/getDatasets:
-    get:
-      description: Returns a list of all dataset names for a given job
-      parameters:
-      - description: Job name
-        in: query
-        name: job
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            additionalProperties: true
-            type: object
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "404":
-          description: Not Found
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Get all datasets for a job
-      tags:
-      - datasets
   /api/getImages:
     get:
-      description: Returns a list of all images for a given job and dataset
+      description: Returns all base64 encoded images for a specific page of a job
       parameters:
       - description: Job name
         in: query
@@ -179,9 +73,15 @@ paths:
             additionalProperties:
               type: string
             type: object
-      summary: Get all images for a dataset
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get all images for a job
       tags:
-      - images
+      - base64images
   /api/getJobs:
     get:
       description: Returns a list of all job names
@@ -247,9 +147,25 @@ paths:
       summary: Save pending review
       tags:
       - review
-  /api/unapprovedRemove:
+  /api/setAllPages:
     post:
-      description: Clear all unapproved pending review data
+      consumes:
+      - application/json
+      description: Sets all page details for a given job
+      parameters:
+      - description: Job name
+        in: query
+        name: job
+        required: true
+        type: string
+      - description: List of page details
+        in: body
+        name: pages
+        required: true
+        schema:
+          items:
+            type: string
+          type: array
       produces:
       - application/json
       responses:
@@ -259,7 +175,25 @@ paths:
             additionalProperties:
               type: string
             type: object
-      summary: Clear unapproved pending review data
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Set all pages for a job
       tags:
-      - review
+      - pages
 swagger: "2.0"

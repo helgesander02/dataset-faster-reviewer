@@ -1,26 +1,29 @@
 package models_verify_viewer
 
-type ImagesPerPageCache struct {
-	JobName string       `json:"job_name"`
-	MaxPage int          `json:"max_page"`
-	Pages   []ImageItems `json:"pages"`
+type Pages struct {
+	JobName   string      `json:"job_name"`
+	PageItems []PageItems `json:"page_items"`
 }
 
-type ImageItems struct {
-	DatasetName    string  `json:"dataset_name"`
-	ImageSet       []Image `json:"image_set"`
-	Base64ImageSet []Image `json:"base64_image_set"`
+type PageItems struct {
+	DatasetName string  `json:"item_dataset_name"`
+	ImageSet    []Image `json:"item_image_set"`
 }
 
-func NewImagesPerPageCache() ImagesPerPageCache {
-	return ImagesPerPageCache{
-		JobName: "",
-		Pages:   []ImageItems{},
+func NewPages() Pages {
+	return Pages{
+		JobName:   "",
+		PageItems: NewPageItemsSet(),
 	}
 }
 
-func NewImageItems(datasetName string) ImageItems {
-	return ImageItems{
-		DatasetName: datasetName,
+func NewPageItems() PageItems {
+	return PageItems{
+		DatasetName: "",
+		ImageSet:    NewImageSet(),
 	}
+}
+
+func NewPageItemsSet() []PageItems {
+	return []PageItems{}
 }

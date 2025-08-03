@@ -15,54 +15,6 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/api/approvedRemove": {
-            "post": {
-                "description": "Remove images that have been approved from pending review",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "review"
-                ],
-                "summary": "Remove approved images",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    }
-                }
-            }
-        },
-        "/api/folder-structure": {
-            "get": {
-                "description": "Returns the folder structure data",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "folder"
-                ],
-                "summary": "Get folder structure",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {}
-                    }
-                }
-            }
-        },
         "/api/getAllPages": {
             "get": {
                 "description": "Returns all page details for a given job",
@@ -107,117 +59,9 @@ const docTemplate = `{
                                 "type": "string"
                             }
                         }
-                    }
-                }
-            }
-        },
-        "/api/getBase64Images": {
-            "get": {
-                "description": "Returns base64-encoded images for a given job, dataset, pageIndex, and pageNumber",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "images"
-                ],
-                "summary": "Get base64 images for a dataset page",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Job name",
-                        "name": "job",
-                        "in": "query",
-                        "required": true
                     },
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "dataset",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "integer",
-                        "description": "Page index",
-                        "name": "pageIndex",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "integer",
-                        "description": "Page number",
-                        "name": "pageNumber",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/api/getDatasets": {
-            "get": {
-                "description": "Returns a list of all dataset names for a given job",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "datasets"
-                ],
-                "summary": "Get all datasets for a job",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Job name",
-                        "name": "job",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
+                    "500": {
+                        "description": "Internal Server Error",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -230,14 +74,14 @@ const docTemplate = `{
         },
         "/api/getImages": {
             "get": {
-                "description": "Returns a list of all images for a given job and dataset",
+                "description": "Returns all base64 encoded images for a specific page of a job",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "images"
+                    "base64images"
                 ],
-                "summary": "Get all images for a dataset",
+                "summary": "Get all images for a job",
                 "parameters": [
                     {
                         "type": "string",
@@ -273,6 +117,15 @@ const docTemplate = `{
                     },
                     "404": {
                         "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -381,19 +234,70 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/unapprovedRemove": {
+        "/api/setAllPages": {
             "post": {
-                "description": "Clear all unapproved pending review data",
+                "description": "Sets all page details for a given job",
+                "consumes": [
+                    "application/json"
+                ],
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "review"
+                    "pages"
                 ],
-                "summary": "Clear unapproved pending review data",
+                "summary": "Set all pages for a job",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Job name",
+                        "name": "job",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "description": "List of page details",
+                        "name": "pages",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
