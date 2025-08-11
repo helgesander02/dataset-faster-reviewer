@@ -76,3 +76,7 @@ func (base64image_cache Base64ImageCache) GetBase64ImageCacheByImagePathSet(curr
 
 	return current_page_base64image_set
 }
+
+func (base64image_cache Base64ImageCache) GetBase64ImageCacheByImagePath(current_page_imagepath string) string {
+	return base64image_cache.Base64ImageMap[current_page_imagepath]
+}

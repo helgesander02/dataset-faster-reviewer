@@ -10,24 +10,25 @@ import Status from './Status';
 
 
 export function DatasetSection({
-  currentPagenation, currentDatasets, selectedDataset, selectedJob,
+  currentPagenation, currentDatasetList, selectedPageIndex, selectedDataset, selectedJob,
   onDatasetSelect, onPrevious, onNext
 }: DatasetSectionProps) {
   
   return (
     <>
       <DatasetGrid
-        currentPagenation = {currentPagenation}
-        datasetsPerPage   = {DATASET_PER_PAGE}
-        currentDatasets   = {currentDatasets}
-        selectedDataset   = {selectedDataset}
-        onDatasetSelect   = {onDatasetSelect}
+        currentPagenation   = {currentPagenation}
+        datasetsPerPage     = {DATASET_PER_PAGE}
+        currentDatasetList  = {currentDatasetList}
+        selectedPageIndex   = {selectedPageIndex}
+        selectedDataset     = {selectedDataset}
+        onDatasetSelect     = {onDatasetSelect}
       />
       <Status selectedJob={selectedJob} selectedDataset={selectedDataset} />
-      {currentDatasets.length > 0 && (
+      {currentDatasetList.length > 0 && (
         <Pagination
           currentPagenation = {currentPagenation}
-          totalDatasets     = {currentDatasets.length}
+          totalDatasets     = {currentDatasetList.length}
           datasetsPerPage   = {DATASET_PER_PAGE} 
           onPrevious        = {onPrevious}
           onNext            = {onNext}

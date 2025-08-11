@@ -61,16 +61,80 @@
                 }
             }
         },
-        "/api/getImages": {
+        "/api/getBase64Image": {
+            "get": {
+                "description": "Returns a base64 encoded image for a specific image path in a job",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "images"
+                ],
+                "summary": "Get base64 image by image path",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Job name",
+                        "name": "job",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Image path",
+                        "name": "imagePath",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/getBase64ImageSet": {
             "get": {
                 "description": "Returns all base64 encoded images for a specific page of a job",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "base64images"
+                    "images"
                 ],
-                "summary": "Get all images for a job",
+                "summary": "Get base64image by page index",
                 "parameters": [
                     {
                         "type": "string",
@@ -125,6 +189,70 @@
                 }
             }
         },
+        "/api/getImageSet": {
+            "get": {
+                "description": "Returns image names and paths for a specific page of a job",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "images"
+                ],
+                "summary": "Get image by page index",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Job name",
+                        "name": "job",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Page index",
+                        "name": "pageIndex",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/getJobs": {
             "get": {
                 "description": "Returns a list of all job names",
@@ -134,7 +262,7 @@
                 "tags": [
                     "jobs"
                 ],
-                "summary": "Get all jobs",
+                "summary": "Get all job names",
                 "responses": {
                     "200": {
                         "description": "OK",

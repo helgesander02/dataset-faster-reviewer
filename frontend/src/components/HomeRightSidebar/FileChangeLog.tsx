@@ -26,7 +26,7 @@ export default function FileChangeLog({
               <div className="file-list">
                 {images.map((img, index) => (
                   <div key={index} className="file-item">
-                    • {img.imageName}
+                    • {img.item_image_name}
                   </div>
                 ))}
               </div>

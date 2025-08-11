@@ -4,7 +4,7 @@ import React from 'react';
 import { JobSelectProps } from '@/types/HomeLeftSidebar';
 
 export default function JobSelect({ 
-  currentJobs, selectedJob, loading,
+  currentJobList, selectedJob, loading,
   onJobSelect 
 }: JobSelectProps) {
   
@@ -17,7 +17,7 @@ export default function JobSelect({
         disabled={loading}
       >
         <option value="" disabled>Select a Job</option>
-        {currentJobs.map((job, index) => (
+        {currentJobList.map((job, index) => (
           <option key={job} value={job}>
             {index + 1}. {job}
           </option>

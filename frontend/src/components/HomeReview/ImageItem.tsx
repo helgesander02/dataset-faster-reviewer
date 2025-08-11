@@ -22,7 +22,7 @@ export function ImageItem({
       onClick={() => onToggle(item)}
     >
       <img 
-        src={item.imagePath} 
+        src={item.item_image_path} 
         alt={`Image ${index + 1}`}
         className="home-review-image"
         onError={handleImageError}

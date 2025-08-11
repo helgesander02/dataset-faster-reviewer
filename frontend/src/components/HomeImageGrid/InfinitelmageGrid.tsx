@@ -13,11 +13,11 @@ import LoadingTrigger from './InfiniteLoadingTrigger';
 import '@/styles/HomeImageGrid.css';
 
 export default function InfiniteImageGrid({ 
-  selectedJob, selectedDataset, currentPage,
-  setSelectedDataset, setCurrentPage
+  selectedPages, selectedDataset, selectedPageIndex,
+  setSelectedDataset, setselectedPageIndex
 }: InfiniteImageGridProps) {
 
-  const { allDatasets, loading: datasetsLoading } = useDatasets(selectedJob); 
+  const { DatasetList, loading: datasetsLoading } = useDatasets(selectedPages); //get dataset list 
   const {
     loading: imagesLoading,
     getCurrentImagePages,
@@ -25,33 +25,34 @@ export default function InfiniteImageGrid({
     loadNextPage,
     resetImages,
     registerPageElement
-  } = useInfiniteImages(selectedJob, selectedDataset, allDatasets, currentPage, setSelectedDataset, setCurrentPage);
+  } = useInfiniteImages(selectedPages, selectedDataset, DatasetList, selectedPageIndex, setSelectedDataset, setselectedPageIndex);
   
-  const { selectedImages, handleImageClick } = useImageSelection(selectedJob, allDatasets);
+  const { selectedImages, handleImageClick } = useImageSelection(selectedPages, DatasetList);
   const loadingRef = useIntersectionObserver(loadNextPage, imagesLoading);
 
-  // 註冊頁面元素到觀察器
+  // This function registers the page element for the intersection observer
   const setPageRef = (pageIndex: number) => (element: HTMLDivElement | null) => {
     if (element) {
       registerPageElement(pageIndex, element);
     }
   };
 
+  // 
   useEffect(() => {
-    if (!selectedJob) {
+    if (!selectedPages) {
       resetImages();
     }
-  }, [selectedJob, resetImages]);
+  }, [selectedPages, resetImages]);
 
-  if (!selectedJob) {
+  if (!selectedPages) {
     return <EmptyState />;
   }
   
-  if (datasetsLoading || (allDatasets.length === 0 && datasetsLoading)) {
+  if (datasetsLoading || (DatasetList.length === 0 && datasetsLoading)) {
     return <LoadingState message="Loading datasets..." />;
   }
 
-  if (allDatasets.length === 0) {
+  if (DatasetList.length === 0) {
     return (
       <EmptyState 
         title="No Datasets Found" 
@@ -60,6 +61,7 @@ export default function InfiniteImageGrid({
     );
   }
 
+  //
   const currentImagePages = getCurrentImagePages();
   
   return (

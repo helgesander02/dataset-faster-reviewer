@@ -39,7 +39,50 @@ paths:
       summary: Get all pages for a job
       tags:
       - pages
-  /api/getImages:
+  /api/getBase64Image:
+    get:
+      description: Returns a base64 encoded image for a specific image path in a job
+      parameters:
+      - description: Job name
+        in: query
+        name: job
+        required: true
+        type: string
+      - description: Image path
+        in: query
+        name: imagePath
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get base64 image by image path
+      tags:
+      - images
+  /api/getBase64ImageSet:
     get:
       description: Returns all base64 encoded images for a specific page of a job
       parameters:
@@ -79,9 +122,52 @@ paths:
             additionalProperties:
               type: string
             type: object
-      summary: Get all images for a job
+      summary: Get base64image by page index
       tags:
-      - base64images
+      - images
+  /api/getImageSet:
+    get:
+      description: Returns image names and paths for a specific page of a job
+      parameters:
+      - description: Job name
+        in: query
+        name: job
+        required: true
+        type: string
+      - description: Page index
+        in: query
+        name: pageIndex
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get image by page index
+      tags:
+      - images
   /api/getJobs:
     get:
       description: Returns a list of all job names
@@ -93,7 +179,7 @@ paths:
           schema:
             additionalProperties: true
             type: object
-      summary: Get all jobs
+      summary: Get all job names
       tags:
       - jobs
   /api/getPendingReview:

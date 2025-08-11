@@ -1,21 +1,19 @@
 // useLeftSidebar.ts
 export interface SidebarState {
-    currentJobs:            string[];
-    currentDatasets:        string[];
+    currentJobList:         string[];
+    currentDatasetList:     string[];
     currentPagenation:      number;
     loading:                boolean;  
 }
 
 export interface SidebarActions {
-    handleJobSelect:        (job: string) => void;
-    handleDatasetSelect:    (dataset: string) => void;
     previousPage:           () => void;
     nextPage:               () => void;
 }
 
 // JobSelect.ts
 export interface JobSelectProps {
-    currentJobs:            string[];
+    currentJobList:         string[];
     selectedJob:            string;
     loading:                boolean;
     onJobSelect:            (job: string) => void;
@@ -24,10 +22,11 @@ export interface JobSelectProps {
 // DatasetSection.ts
 export interface DatasetSectionProps {
     currentPagenation:      number; 
-    currentDatasets:        string[]; 
+    currentDatasetList:     string[];
+    selectedPageIndex:      number; 
     selectedDataset:        string;
     selectedJob:            string;
-    onDatasetSelect:        (dataset: string) => void; 
+    onDatasetSelect:        (dataset: string, idx: number) => void;
     onPrevious:             () => void; 
     onNext:                 () => void;
 }
@@ -36,9 +35,10 @@ export interface DatasetSectionProps {
 export interface DatasetGridProps {
     currentPagenation:      number;
     datasetsPerPage:        number;
-    currentDatasets:        string[];
+    currentDatasetList:     string[];
+    selectedPageIndex:      number;
     selectedDataset:        string;
-    onDatasetSelect:        (dataset: string) => void;
+    onDatasetSelect:        (dataset: string, idx: number) => void;
 }
 
 // DatasetPagination.ts

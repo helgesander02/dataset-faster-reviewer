@@ -25,7 +25,7 @@ export function useHomeReview(isOpen: boolean) {
   // Sync selected images with cached images
   useEffect(() => {
     if (reviewData?.items) {
-      const cachedImageName = new Set(cachedImages.map(img => img.imageName));
+      const cachedImageName = new Set(cachedImages.map(img => img.item_image_name));
       setSelectedImages(cachedImageName);
     }
   }, [reviewData, cachedImages]);
@@ -58,10 +58,10 @@ export function useHomeReview(isOpen: boolean) {
         job: selectedJob,
         dataset: selectedDataset,
         images: cachedImages.map(img => ({
-          job: img.job,
-          dataset: img.dataset,
-          imageName: img.imageName,
-          imagePath: img.imagePath
+          job: img.item_job_name,
+          dataset: img.item_dataset_name,
+          imageName: img.item_image_name,
+          imagePath: img.item_image_path
         })),
         timestamp: new Date().toISOString()
       };
@@ -78,13 +78,13 @@ export function useHomeReview(isOpen: boolean) {
 
   // Toggle individual image selection
   const toggleImageSelection = async (item: ReviewItem) => {
-    const { job, dataset, imageName, imagePath } = item;
-    const isCurrentlySelected = selectedImages.has(imageName);
+    const { item_job_name, item_dataset_name, item_image_name, item_image_path } = item;
+    const isCurrentlySelected = selectedImages.has(item_image_name);
     
     if (isCurrentlySelected) {
-      removeImageFromCache(imagePath);
+      removeImageFromCache(item_image_path);
     } else {
-      addImageToCache(job, dataset, imageName, imagePath);
+      addImageToCache(item_job_name, item_dataset_name, item_image_name, item_image_path);
     }
   };
 
@@ -93,7 +93,7 @@ export function useHomeReview(isOpen: boolean) {
     if (!reviewData?.items) return;
     
     reviewData.items.forEach(item => {
-      addImageToCache(item.job, item.dataset, item.imageName, item.imagePath);
+      addImageToCache(item.item_job_name, item.item_dataset_name, item.item_image_name, item.item_image_path);
     });
   };
 
@@ -102,7 +102,7 @@ export function useHomeReview(isOpen: boolean) {
     if (!reviewData?.items) return;
     
     reviewData.items.forEach(item => {
-      removeImageFromCache(item.imagePath);
+      removeImageFromCache(item.item_image_path);
     });
   };
 

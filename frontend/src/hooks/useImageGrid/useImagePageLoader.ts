@@ -1,8 +1,7 @@
 "use client";
 
 import { useCallback, useRef } from 'react';
-import { fetchBase64Images } from '@/services/api';
-import { IMAGES_PER_PAGE } from '@/services/config';
+import { fetchBase64Images, fetchImages, fetchALLPages } from '@/services/api';
 import { Image, ImagePage } from '@/types/HomeImageGrid';
 
 export function useImagePageLoader() {
@@ -20,22 +19,25 @@ export function useImagePageLoader() {
     }
 
     try {
-      const response = await fetchBase64Images(job, dataset, pageIndex, IMAGES_PER_PAGE);
+      const response = await fetchBase64Images(job, pageIndex);
+      const responseImage = await fetchImages(job, pageIndex);
       console.log(`Loaded page ${pageIndex} for dataset ${dataset}:`, response);
+      const maxPage = await fetchALLPages(job)
       
-      if (response && response.images.base64_image_set && response.images.base64_image_set.length > 0) {
-        const pageImages: Image[] = response.images.base64_image_set.map((image: { name: string, path: string }) => ({
-          name: image.name,
-          url: `data:image/webp;base64,${image.path}`,
-          dataset: dataset
+      if (response && response.base64_image_set && response.base64_image_set.length > 0) {
+        const pageImages: Image[] = response.base64_image_set.map((base64Image: string, index: number) => ({
+            name: responseImage.image_name_set[index],
+            url: `data:image/webp;base64,${base64Image}`,
+            dataset: dataset
         }));
+    
 
         const imagePage: ImagePage = {
           dataset: dataset, images: pageImages,isNewDataset: pageIndex === 0
         };
 
         loadedPagesRef.current.add(pageKey);
-        return { imagePage, maxPage: response.maxPage };
+        return { imagePage, maxPage: maxPage.total_pages };
       }
       return null;
       

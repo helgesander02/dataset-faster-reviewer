@@ -30,6 +30,16 @@ func (us UserServices) GetBase64ImageCacheByPage(jobName string, pageIndex int) 
 	return current_page_imagepath_set, current_page_base64image_set
 }
 
+func (us *UserServices) GetBase64ImageByPath(jobName string, imagePath string) string {
+	imageCache, exist := us.CacheManager.GetImageCacheStore(jobName)
+	if !exist {
+		log.Println("Image cache store not found for job:", jobName)
+		return ""
+	}
+
+	return imageCache.GetBase64ImageCacheByImagePath(imagePath)
+}
+
 func (us *UserServices) SetBase64ImageCacheByPage(jobName string, pageIndex int) ([]string, []string) {
 	if !us.CacheManager.ExistsImageCacheStore(jobName) {
 		us.CacheManager.SetImageCacheStore(jobName)
@@ -49,11 +59,19 @@ func (us *UserServices) SetBase64ImageCacheByPage(jobName string, pageIndex int)
 	return current_page_imagepath_set, current_page_base64image_set
 }
 
-func (us *UserServices) ImageCacheExists(jobName string) bool {
-	_, found := us.CacheManager.GetImageCacheStore(jobName)
+func (us *UserServices) ImageCacheExists(jobName string, pageIndex int) bool {
+	data, found := us.CacheManager.GetImageCacheStore(jobName)
 	if !found {
 		log.Println("Image cache store not found for job:", jobName)
 		return false
+	}
+
+	_, imagePaths := us.GetImageCacheByPage(jobName, pageIndex)
+	for _, imagePath := range imagePaths {
+		if _, exists := data.Base64ImageMap[imagePath]; !exists {
+			log.Printf("Image path %s not found in cache for job %s", imagePath, jobName)
+			return false
+		}
 	}
 	return true
 }

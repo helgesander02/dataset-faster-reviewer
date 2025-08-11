@@ -30,6 +30,10 @@ func (us *UserServices) GetCurrentPageData(jobName string) (models_verify_viewer
 	return us.CurrentPageData, true
 }
 
+func (us UserServices) GetImageCacheByPage(jobName string, pageIndex int) ([]string, []string) {
+	return us.CurrentPageData.GetPageItemAllImageNameByIndex(pageIndex), us.CurrentPageData.GetPageItemAllImagePathByIndex(pageIndex)
+}
+
 func (us *UserServices) ClearCurrentPageData() {
 	us.CurrentPageData.ClearPages()
 }

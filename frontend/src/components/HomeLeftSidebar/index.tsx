@@ -15,43 +15,51 @@ import LoadingIndicator from './LoadingIndicator';
  * It utilizes context to manage the selected job and dataset.
  * 
  * Props:
- * - currentJobs:         string[] - List of jobs available for selection.
- * - currentDatasets:     string[] - List of datasets available for the selected job.
- * - currentPagenation:   number - Pagination information for the datasets.
- * - loading:             boolean - Indicates if data is currently being loaded.
- * - handleJobSelect:     function - Callback function to handle job selection.
- * - handleDatasetSelect: function - Callback function to handle dataset selection.
- * - previousPage:        function - Callback function to navigate to the previous page of datasets.
- * - nextPage:            function - Callback function to navigate to the next page of datasets.
+ * - currentJobList: Array of job names to display.
+ * - currentDatasetList: Array of dataset names to display.
+ * - currentPagenation: Current pagination index for datasets.
+ * - loading: Boolean indicating if data is being loaded.
+ * - previousPage: Function to navigate to the previous page of datasets.
+ * - nextPage: Function to navigate to the next page of datasets.
  */
 export default function LeftSidebar() {
 
-  const { selectedJob, selectedDataset } = useJobDataset();
+  const { 
+    selectedJob, selectedDataset, selectedPageIndex,
+    setSelectedJob, setSelectedDataset, setselectedPageIndex
+   } = useJobDataset();
+
   const {
-    currentJobs, currentDatasets, currentPagenation, loading,
-    handleJobSelect, handleDatasetSelect, previousPage, nextPage
+    currentJobList, currentDatasetList, currentPagenation, loading,
+    previousPage, nextPage
   } = useLeftSidebar();
+
+  const onDatasetSelect = (dataset: string, idx: number) => {
+    setselectedPageIndex(idx);
+    setSelectedDataset(dataset);
+  };
 
   return (
     <div className="sidebar-container">
       <SidebarHeader />
       
       <JobSelect 
-        currentJobs = {currentJobs} 
-        selectedJob = {selectedJob} 
-        loading     = {loading} 
-        onJobSelect = {handleJobSelect} 
+        currentJobList = {currentJobList} 
+        selectedJob    = {selectedJob} 
+        loading        = {loading} 
+        onJobSelect    = {setSelectedJob} 
       />
       
       {selectedJob && (
         <DatasetSection
-          currentPagenation = {currentPagenation}
-          currentDatasets   = {currentDatasets}
-          selectedDataset   = {selectedDataset}
-          selectedJob       = {selectedJob}
-          onDatasetSelect   = {handleDatasetSelect}
-          onPrevious        = {previousPage}
-          onNext            = {nextPage}
+          currentPagenation   = {currentPagenation}
+          currentDatasetList  = {currentDatasetList}
+          selectedPageIndex   = {selectedPageIndex}
+          selectedDataset     = {selectedDataset} 
+          selectedJob         = {selectedJob}
+          onDatasetSelect     = {onDatasetSelect}
+          onPrevious          = {previousPage}
+          onNext              = {nextPage}
         />
       )}
       {loading && <LoadingIndicator />}

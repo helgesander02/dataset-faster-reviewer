@@ -1,9 +1,9 @@
 export interface InfiniteImageGridProps {
-    selectedJob: string | null;
-    selectedDataset: string | null;
-    currentPage: number;
-    setSelectedDataset: (dataset: string) => void;
-    setCurrentPage: (page: number) => void;
+    selectedPages:        string;
+    selectedDataset:      string;
+    selectedPageIndex:    number;
+    setSelectedDataset:   (dataset: string) => void;
+    setselectedPageIndex: (page: number) => void;
 }
 
 export interface UseInfiniteImagesReturn {
