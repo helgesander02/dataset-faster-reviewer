@@ -18,7 +18,9 @@ export default function DatasetGrid({
       <p className="dataset-label">Select a Dataset:</p>
       <div className="dataset-grid">
         {getCurrentPageDatasets().map((dataset, idx) => {
-          const isSelected = idx === selectedPageIndex;
+          const absoluteIndex = currentPagenation * datasetsPerPage + idx;
+          const isSelected = absoluteIndex === selectedPageIndex;
+          
           return (
             <div 
               key       = {idx} 
@@ -26,7 +28,7 @@ export default function DatasetGrid({
               onClick   = {() => onDatasetSelect(dataset, idx)}
               title     = {dataset}
             >
-              {idx + 1 + currentPagenation * datasetsPerPage}
+              {absoluteIndex + 1}
             </div>
           );
         })}

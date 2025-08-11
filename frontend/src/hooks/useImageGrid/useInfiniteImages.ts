@@ -57,7 +57,7 @@ export function useInfiniteImages(
     };
 
     fetchCurrentDatasetByCurrentPage();
-  }, [currentPageIndex]);
+  }, [currentPageIndex, selectedPages, selectedDataset, setSelectedDataset]);
 
   // This function resets the images and clears all observers
   const resetImages = useCallback(() => {

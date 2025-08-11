@@ -6,7 +6,7 @@ import LoadingState from './LoadingState';
 import ImageItem from './ImageItem';
 
 export default function HomeImageGrid({ 
-  images, selectedImages, isLoading, datasetName,
+  images, selectedImages, isLoading,
   onImageClick,  
 }: HomeImageGridProps) {
 

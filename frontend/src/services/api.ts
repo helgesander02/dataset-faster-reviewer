@@ -1,8 +1,7 @@
 import axios from 'axios';
 
-
 //const API_BASE_URL = 'http://10.2.142.123:8123';
-const API_BASE_URL = 'http://127.0.0.1:8080';
+const API_BASE_URL = 'http://localhost:8080';
 const api = axios.create({
     baseURL: API_BASE_URL?.endsWith('/') ? API_BASE_URL : `${API_BASE_URL}/`,
 });
@@ -25,13 +24,25 @@ export interface DatasetsResponse {
 
 interface PageItems {
     item_dataset_name: string;
-    item_image_set: any[]; 
+    item_image_set: unknown[];
 }
 
 interface GetAllPagesResponse {
     total_pages: number;
     pages: PageItems[];
 }
+
+interface ImageToSave {
+    job: string;
+    dataset: string;
+    imageName: string;
+    imagePath: string;
+}
+
+export interface SavePendingReviewPayload {
+    images: ImageToSave[];
+}
+
 
 export const fetchJobs = async (): Promise<JobsResponse> => {
     try {
@@ -131,7 +142,8 @@ export const fetchALLPages = async (job: string) => {
     }
 };
 
-export const savePendingReview = async (data: any) => {
+// FIX 2: Updated function signature to use the new interface
+export const savePendingReview = async (data: SavePendingReviewPayload) => {
     try {
         console.log('Saving pending review data:', data);
         const response = await api.post('/api/savePendingReview', data.images);

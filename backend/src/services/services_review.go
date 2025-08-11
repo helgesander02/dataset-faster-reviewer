@@ -3,6 +3,7 @@ package services
 import (
 	"backend/src/models_verify_viewer"
 	"log"
+	"path/filepath"
 )
 
 func (us *UserServices) SavePendingReviewData(body interface{}) int {
@@ -57,4 +58,18 @@ func (us *UserServices) GetPendingReviewItems() []models_verify_viewer.PendingRe
 
 func (us *UserServices) ClearPendingReviewData() {
 	us.PendingReviewData.ClearPendingReviewItems()
+}
+
+func (us *UserServices) GetPendingReviewImagePaths() []string {
+	items := us.GetPendingReviewItems()
+	imagePaths := make([]string, 0, len(items))
+
+	for _, item := range items {
+		// Construct full path: ImageRoot/JobName/DatasetName/ImageName
+		fullPath := filepath.Join(ImageRoot, item.JobName, item.DatasetName, item.ImageName)
+		imagePaths = append(imagePaths, fullPath)
+	}
+	log.Printf("GetPendingReviewImagePaths: found %d image paths", len(imagePaths))
+
+	return imagePaths
 }

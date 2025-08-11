@@ -11,7 +11,7 @@ import (
 // - GetPort: get port
 // - GerDatabaseInformation: get db host, db port, db name
 func (c *Config) GetServerAddress() string {
-	return fmt.Sprintf("%s:%s", c.Server.Host, c.Server.Port)
+	return fmt.Sprintf(":%s", c.Server.Port)
 }
 
 func (c *Config) GetStaticFolder() string {
@@ -24,7 +24,7 @@ func (c *Config) GetHost() string {
 
 func (c *Config) GetPort() string {
 	return c.Server.Port
-} 
+}
 
 func (c *Config) GerDatabaseInformation() string {
 	return fmt.Sprintf("name:%s, host:%s, port:%s", c.Database.Database, c.Database.Host, c.Database.Port)

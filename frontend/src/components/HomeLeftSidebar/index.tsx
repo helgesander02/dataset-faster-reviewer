@@ -34,8 +34,10 @@ export default function LeftSidebar() {
     previousPage, nextPage
   } = useLeftSidebar();
 
-  const onDatasetSelect = (dataset: string, idx: number) => {
-    setselectedPageIndex(idx);
+  const onDatasetSelect = (dataset: string, relativeIdx: number) => {
+    // Calculate absolute index based on current pagination and relative index
+    const absoluteIndex = currentPagenation * 12 + relativeIdx; // Assuming DATASET_PER_PAGE is 12
+    setselectedPageIndex(absoluteIndex);
     setSelectedDataset(dataset);
   };
 

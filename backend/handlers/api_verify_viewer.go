@@ -267,3 +267,26 @@ func (handle *Handle) GetPendingReview(c *gin.Context) {
 
 	c.JSON(http.StatusOK, handle.UserServices.PendingReviewData)
 }
+
+// @Summary      Get pending review image paths
+// @Description  Returns a list of full image paths for all pending review items
+// @Tags         review
+// @Produce      json
+// @Success      200  {object}  map[string]interface{}
+// @Failure      404  {object}  map[string]string
+// @Router       /api/getPendingReviewPaths [get]
+func (handle *Handle) GetPendingReviewPaths(c *gin.Context) {
+	items := handle.UserServices.GetPendingReviewItems()
+
+	if len(items) == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"error": "No pending review items found"})
+		return
+	}
+
+	imagePaths := handle.UserServices.GetPendingReviewImagePaths()
+
+	c.JSON(http.StatusOK, gin.H{
+		"total_items": len(items),
+		"image_paths": imagePaths,
+	})
+}

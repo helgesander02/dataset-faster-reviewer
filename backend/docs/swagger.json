@@ -300,6 +300,36 @@
                 }
             }
         },
+        "/api/getPendingReviewPaths": {
+            "get": {
+                "description": "Returns a list of full image paths for all pending review items",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "review"
+                ],
+                "summary": "Get pending review image paths",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/savePendingReview": {
             "post": {
                 "description": "Save pending review data",

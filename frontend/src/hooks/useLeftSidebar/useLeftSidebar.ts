@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useJobDataset } from '@/components/JobDatasetContext';
 import { SidebarState, SidebarActions } from '@/types/HomeLeftSidebar';
 import { fetchJobs, fetchDatasets } from '@/services/api';
@@ -8,8 +8,8 @@ import { DATASET_PER_PAGE } from '@/services/config';
 
 export function useLeftSidebar(): SidebarState & SidebarActions {
   const { 
-    selectedJob, selectedPages, selectedDataset, selectedPageIndex,
-    setSelectedJob, setSelectedPages, setSelectedDataset, setselectedPageIndex 
+    selectedPages, selectedPageIndex,
+    setSelectedDataset, setselectedPageIndex 
   } = useJobDataset();
 
   const [currentJobList, setJobList] = useState<string[]>([]);
@@ -17,7 +17,6 @@ export function useLeftSidebar(): SidebarState & SidebarActions {
   const [currentPagenation, setCurrentPagenation] = useState<number>(0);  
   const [loading, setLoading] = useState<boolean>(false);
   
-
   // Load jobs on component mount
   useEffect(() => {
     const loadJobs = async () => {
@@ -66,20 +65,48 @@ export function useLeftSidebar(): SidebarState & SidebarActions {
     };
 
     loadDatasets();
-  }, [selectedPages]);
+  }, [selectedPages, setSelectedDataset, setselectedPageIndex]); 
+
+  // Auto-paginate when selectedPageIndex exceeds current page capacity
+  useEffect(() => {
+    if (selectedPageIndex < 0) return;
+    
+    const requiredPage = Math.floor(selectedPageIndex / DATASET_PER_PAGE);
+    const totalPages = Math.ceil(currentDatasetList.length / DATASET_PER_PAGE);
+    
+    if (requiredPage !== currentPagenation && requiredPage < totalPages) {
+      setCurrentPagenation(requiredPage);
+    }
+  }, [selectedPageIndex, currentDatasetList.length, currentPagenation]);
 
   // Pagination logic
-  const previousPage = () => {
+  const previousPage = useCallback(() => {
     if (currentPagenation > 0) {
-      setCurrentPagenation(currentPagenation - 1);
+      const newPage = currentPagenation - 1;
+      setCurrentPagenation(newPage);
+      
+      // Reset selectedPageIndex to first item of the new page
+      const newIndex = newPage * DATASET_PER_PAGE;
+      if (newIndex < currentDatasetList.length) {
+        setselectedPageIndex(newIndex);
+        setSelectedDataset(currentDatasetList[newIndex]);
+      }
     }
-  };
+  }, [currentPagenation, currentDatasetList, setselectedPageIndex, setSelectedDataset]);
 
-  const nextPage = () => {
+  const nextPage = useCallback(() => {
     if ((currentPagenation + 1) * DATASET_PER_PAGE < currentDatasetList.length) {
-      setCurrentPagenation(currentPagenation + 1);
+      const newPage = currentPagenation + 1;
+      setCurrentPagenation(newPage);
+      
+      // Reset selectedPageIndex to first item of the new page
+      const newIndex = newPage * DATASET_PER_PAGE;
+      if (newIndex < currentDatasetList.length) {
+        setselectedPageIndex(newIndex);
+        setSelectedDataset(currentDatasetList[newIndex]);
+      }
     }
-  };
+  }, [currentPagenation, currentDatasetList, setselectedPageIndex, setSelectedDataset]);
 
   return {
     currentJobList,

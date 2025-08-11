@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect } from 'react';
 import { InfiniteImageGridProps } from '@/types/HomeImageGrid';
 import { useDatasets } from '@/hooks/useImageGrid/useDatasets';
 import { useInfiniteImages } from '@/hooks/useImageGrid/useInfiniteImages';
@@ -78,7 +78,6 @@ export default function InfiniteImageGrid({
                   images={page.images}
                   selectedImages={selectedImages}
                   isLoading={false}
-                  datasetName={page.dataset}
                   onImageClick={handleImageClick}
                 />
               </div>

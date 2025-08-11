@@ -1,8 +1,8 @@
 "use client";
 
-import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
+import React, { createContext, useState, useContext, ReactNode, useEffect, useCallback } from 'react';
 import { CachedImage, JobDatasetContextType } from '@/types/JobDatasetContext';
-import { getPendingReview, updateALLPages, fetchALLPages } from '@/services/api';
+import { getPendingReview, updateALLPages } from '@/services/api';
 import { IMAGES_PER_PAGE } from '@/services/config';
 
 const JobDatasetContext = createContext<JobDatasetContextType | undefined>(undefined);
@@ -34,6 +34,34 @@ export function JobDatasetProvider({ children }: { children: ReactNode }) {
   const [selectedPageIndex, setselectedPageIndex] = useState<number>(0);
   const [cachedImages, setCachedImages] = useState<CachedImage[]>([]);
   
+  // Function to add an image to the cache
+  const addImageToCache = useCallback((item_job_name: string, item_dataset_name: string, item_image_name: string, item_image_path: string) => {
+    setCachedImages(prev => {
+      const exists = prev.some(
+        img => img.item_job_name === item_job_name && 
+               img.item_dataset_name === item_dataset_name && 
+               img.item_image_path === item_image_path && 
+               img.item_image_name === item_image_name
+      );
+
+      if (!exists) {
+        const newCachedImage: CachedImage = { item_job_name, item_dataset_name, item_image_name, item_image_path };
+        return [newCachedImage, ...prev];
+      }
+      return prev;
+    });
+  }, []);
+
+  // Function to remove an image from the cache
+  const removeImageFromCache = useCallback((imagePath: string) => {
+    setCachedImages(prev => prev.filter(img => img.item_image_path !== imagePath));
+  }, []);
+
+  const getCache = useCallback((job: string, dataset: string) => {
+    return cachedImages
+      .filter(img => img.item_job_name === job && img.item_dataset_name === dataset)
+      .map(img => img.item_image_path);
+  }, [cachedImages]);
 
   // Load pending review images on initial render
   useEffect(() => {
@@ -49,7 +77,7 @@ export function JobDatasetProvider({ children }: { children: ReactNode }) {
     }
 
     loadPending();
-  }, []);
+  }, [addImageToCache]);
 
   // Update job pages when selectedJob changes
   useEffect(() => {
@@ -67,29 +95,6 @@ export function JobDatasetProvider({ children }: { children: ReactNode }) {
 
     updatePageData();
   }, [selectedJob]);
-
-  // Function to add an image to the cache
-  const addImageToCache = (item_job_name: string, item_dataset_name: string, item_image_name: string, item_image_path: string) => {
-    const exists = cachedImages.some(
-      img => img.item_job_name === item_job_name && img.item_dataset_name === item_dataset_name && img.item_image_path === item_image_path && img.item_image_name === item_image_name
-    );
-
-    if (!exists) {
-      const newCachedImage: CachedImage = { item_job_name, item_dataset_name, item_image_name, item_image_path };
-      setCachedImages(prev => [newCachedImage, ...prev]);
-    }
-  };
-
-  // Function to remove an image from the cache
-  const removeImageFromCache = (imagePath: string) => {
-    setCachedImages(prev => prev.filter(img => img.item_image_path !== imagePath));
-  };
-
-  const getCache = (job: string, dataset: string) => {
-    return cachedImages
-      .filter(img => img.item_job_name === job && img.item_dataset_name === dataset)
-      .map(img => img.item_image_path);
-  };
 
   return (
     <JobDatasetContext.Provider

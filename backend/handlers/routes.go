@@ -18,5 +18,6 @@ func (handle *Handle) RegisterRoutes(r *gin.Engine) {
 
 		api.POST("/savePendingReview", handle.SavePendingReview)
 		api.GET("/getPendingReview", handle.GetPendingReview)
+		api.GET("/getPendingReviewPaths", handle.GetPendingReviewPaths)
 	}
 }

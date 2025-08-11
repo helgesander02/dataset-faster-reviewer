@@ -17,7 +17,7 @@ var cfg *config.Config
 
 func init() {
 	// Use the Flag manage env variables
-	env := flag.String("env", "development", "Set the environment (development|production)")
+	env := flag.String("env", "production", "Set the environment (development|production)")
 	flag.Parse()
 
 	// load config

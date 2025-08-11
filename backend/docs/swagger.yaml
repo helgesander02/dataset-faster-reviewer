@@ -199,6 +199,26 @@ paths:
       summary: Get pending review
       tags:
       - review
+  /api/getPendingReviewPaths:
+    get:
+      description: Returns a list of full image paths for all pending review items
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get pending review image paths
+      tags:
+      - review
   /api/savePendingReview:
     post:
       consumes:

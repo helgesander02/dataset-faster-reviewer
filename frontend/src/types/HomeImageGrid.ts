@@ -28,7 +28,6 @@ export interface HomeImageGridProps {
     images: Image[];
     selectedImages: Set<string>;
     isLoading: boolean;
-    datasetName: string;
     onImageClick: (imageName: string, imageUrl: string, dataset: string) => void;
 }
 
@@ -63,4 +62,4 @@ export interface LoadingTriggerProps {
     loadingMessage?: string;
 }
 
-export interface DatasetImageCountsMap extends Map<string, number> {}
+export type DatasetImageCountsMap = Map<string, number>;
