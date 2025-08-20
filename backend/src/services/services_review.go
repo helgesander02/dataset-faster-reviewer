@@ -13,7 +13,7 @@ func (us *UserServices) SavePendingReviewData(body interface{}) int {
 		return 0
 	}
 
-	var items []models_verify_viewer.PendingReviewItem
+	items := models_verify_viewer.NewPendingReviewItemSet()
 	for _, item := range itemsData {
 		itemMap, ok := item.(map[string]interface{})
 		if !ok {
@@ -39,8 +39,29 @@ func (us *UserServices) SavePendingReviewData(body interface{}) int {
 
 	pending.Items = items
 	us.PendingReviewData.MergePendingReviewItems(pending)
+	if err := us.BackupManager.CreateBackup(us.PendingReviewData); err != nil {
+		log.Printf("Warning: Failed to create backup: %v", err)
+	}
 	log.Printf("SavePendingReview: loaded %d items", len(items))
 	return len(items)
+}
+
+func (us *UserServices) GetBackupList() ([]models_verify_viewer.BackupInfo, error) {
+	return us.BackupManager.ListBackups()
+}
+
+func (us *UserServices) RestoreFromBackup(filename string) error {
+	restoredData, err := us.BackupManager.RestoreFromBackup(filename)
+	if err != nil {
+		return err
+	}
+
+	if err := us.BackupManager.CreateBackup(us.PendingReviewData); err != nil {
+		log.Printf("Warning: Failed to create backup before restore: %v", err)
+	}
+
+	us.PendingReviewData = restoredData
+	return nil
 }
 
 func getString(m map[string]interface{}, key string) string {
@@ -57,6 +78,10 @@ func (us *UserServices) GetPendingReviewItems() []models_verify_viewer.PendingRe
 }
 
 func (us *UserServices) ClearPendingReviewData() {
+	if err := us.BackupManager.CreateBackup(us.PendingReviewData); err != nil {
+		log.Printf("Warning: Failed to create backup before clear: %v", err)
+	}
+
 	us.PendingReviewData.ClearPendingReviewItems()
 }
 
@@ -65,7 +90,6 @@ func (us *UserServices) GetPendingReviewImagePaths() []string {
 	imagePaths := make([]string, 0, len(items))
 
 	for _, item := range items {
-		// Construct full path: ImageRoot/JobName/DatasetName/ImageName
 		fullPath := filepath.Join(ImageRoot, item.JobName, item.DatasetName, item.ImageName)
 		imagePaths = append(imagePaths, fullPath)
 	}

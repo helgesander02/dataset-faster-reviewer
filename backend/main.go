@@ -31,7 +31,7 @@ func init() {
 }
 
 func main() {
-	handle := handlers.NewHandle(cfg.GetStaticFolder())
+	handle := handlers.NewHandle(cfg.GetStaticFolder(), cfg.GetBackupFolder())
 
 	r := gin.Default()
 	r.Use(cors.Default())

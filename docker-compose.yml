@@ -17,7 +17,8 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      - /Users/sanderhsu/Desktop/example_root:/app/example_root        
+      - ../example_root:/app/example_root
+      - ../backups:/app/backups     
     networks:
       - app-network
 

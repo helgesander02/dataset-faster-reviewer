@@ -9,8 +9,9 @@ type Handle struct {
 	JointServices *services.JointServices
 }
 
-func NewHandle(root string) *Handle {
+func NewHandle(root string, backupDir string) *Handle {
 	services.ImageRoot = root
+	services.BackupDir = backupDir
 	us := services.NewUserServices()
 	js := services.NewJointServices()
 

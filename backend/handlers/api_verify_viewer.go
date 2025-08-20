@@ -290,3 +290,78 @@ func (handle *Handle) GetPendingReviewPaths(c *gin.Context) {
 		"image_paths": imagePaths,
 	})
 }
+
+// @Summary      Get backup list
+// @Description  Get list of all available backups
+// @Tags         backup
+// @Produce      json
+// @Success      200  {object}  map[string]interface{}
+// @Failure      500  {object}  map[string]string
+// @Router       /api/getBackupList [get]
+func (handle *Handle) GetBackupList(c *gin.Context) {
+	backups, err := handle.UserServices.GetBackupList()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error":   "Failed to get backup list",
+			"details": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"status":  "success",
+		"backups": backups,
+		"count":   len(backups),
+	})
+}
+
+// @Summary      Restore from backup
+// @Description  Restore pending review data from a specific backup
+// @Tags         backup
+// @Accept       json
+// @Produce      json
+// @Param        body  body  object{filename=string}  true  "Backup filename"
+// @Success      200  {object}  map[string]interface{}
+// @Failure      400  {object}  map[string]string
+// @Failure      404  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /api/restoreFromBackup [post]
+func (handle *Handle) RestoreFromBackup(c *gin.Context) {
+	var requestBody struct {
+		Filename string `json:"filename" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&requestBody); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":   "Invalid request body",
+			"details": err.Error(),
+		})
+		return
+	}
+
+	err := handle.UserServices.RestoreFromBackup(requestBody.Filename)
+	if err != nil {
+		if err.Error() == "backup file not found: "+requestBody.Filename {
+			c.JSON(http.StatusNotFound, gin.H{
+				"error":    "Backup file not found",
+				"filename": requestBody.Filename,
+			})
+			return
+		}
+
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error":   "Failed to restore from backup",
+			"details": err.Error(),
+		})
+		return
+	}
+
+	items := handle.UserServices.GetPendingReviewItems()
+
+	c.JSON(http.StatusOK, gin.H{
+		"status":         "success",
+		"message":        "Successfully restored from backup",
+		"filename":       requestBody.Filename,
+		"restored_items": len(items),
+	})
+}

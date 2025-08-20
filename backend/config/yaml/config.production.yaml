@@ -3,7 +3,8 @@ server:
   host: "localhost"
 
 static:
-  folder: "/app/example_root/image_root/unverlify"
+  root_folder: "/app/example_root/image_root/unverlify"
+  backup_folder: "/app/backups
 
 database:
   host: ""

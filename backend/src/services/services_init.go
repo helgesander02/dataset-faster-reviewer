@@ -8,6 +8,7 @@ import (
 
 var (
 	ImageRoot string
+	BackupDir string
 )
 
 type JointServices struct {
@@ -27,6 +28,7 @@ type UserServices struct {
 	CacheManager      *models_verify_viewer.CacheManager
 	CurrentPageData   models_verify_viewer.Pages
 	PendingReviewData models_verify_viewer.PendingReview
+	BackupManager     *models_verify_viewer.BackupManager
 }
 
 func NewUserServices() *UserServices {
@@ -34,6 +36,7 @@ func NewUserServices() *UserServices {
 		CacheManager:      models_verify_viewer.NewCacheManager(),
 		CurrentPageData:   models_verify_viewer.NewPages(),
 		PendingReviewData: models_verify_viewer.NewPendingReview(),
+		BackupManager:     models_verify_viewer.NewBackupManager(BackupDir),
 	}
 
 	return us
@@ -54,6 +57,9 @@ func CheckServicesState(us *UserServices, js *JointServices) {
 
 	} else if us.PendingReviewData.Items == nil {
 		log.Println("Initialized PendingReviewData")
+
+	} else if us.BackupManager == nil {
+		log.Println("Initialized BackupManager")
 
 	} else {
 		log.Println("Anything is initialized")
