@@ -4,19 +4,19 @@ import React from 'react';
 import Image from 'next/image';
 import { ImageItemProps } from '@/types/HomeImageGrid';
 import SelectionIndicator from './ImageSelectionIndicator';
+import { memo } from 'react';
+import { useCallback } from 'react';
 
-export default function ImageItem({ 
+export default memo(function ImageItem({ 
   image, index, isSelected, 
   onImageClick 
 }: ImageItemProps) {
-
-  const handleClick = () => {
+  const handleClick = useCallback(() => {
     onImageClick(image.name, image.url, image.dataset);
-  };
+  }, [image.name, image.url, image.dataset, onImageClick]);
 
   return (
     <div 
-      key={`${image.dataset}-${image.name}-${index}`} 
       className={`image-item ${isSelected ? 'selected' : ''}`}
       onClick={handleClick}
     >
@@ -26,6 +26,8 @@ export default function ImageItem({
         width={150}
         height={150}
         className="grid-image"
+        loading={index < 4 ? "eager" : "lazy"}
+        sizes="(max-width: 768px) 100px, 150px"
       />
       {isSelected && <SelectionIndicator />}
       <div className="image-name">
@@ -33,4 +35,4 @@ export default function ImageItem({
       </div>
     </div>
   );
-}
+});

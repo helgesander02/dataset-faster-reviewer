@@ -31,18 +31,16 @@ func init() {
 }
 
 func main() {
-	handle := handlers.NewHandle(cfg.GetStaticFolder(), cfg.GetBackupFolder())
-
 	r := gin.Default()
 	r.Use(cors.Default())
 
 	// API routes
+	handle := handlers.NewHandle(cfg.GetStaticFolder(), cfg.GetBackupFolder())
 	handle.RegisterRoutes(r)
-	// Static route
-	r.Static("/static", cfg.GetStaticFolder())
 	// Swagger UI route
 	r.GET("/swagger/*any", gin.WrapH(httpSwagger.WrapHandler))
 
+	// Start the server
 	log.Printf("Server started at %s", cfg.GetServerAddress())
 	if err := r.Run(cfg.GetServerAddress()); err != nil {
 		log.Fatal(err)

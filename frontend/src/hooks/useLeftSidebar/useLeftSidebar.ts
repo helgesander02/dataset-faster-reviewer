@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useJobDataset } from '@/components/JobDatasetContext';
 import { SidebarState, SidebarActions } from '@/types/HomeLeftSidebar';
 import { fetchJobs, fetchDatasets } from '@/services/api';
@@ -16,27 +16,41 @@ export function useLeftSidebar(): SidebarState & SidebarActions {
   const [currentDatasetList, setDatasetList] = useState<string[]>([]);
   const [currentPagenation, setCurrentPagenation] = useState<number>(0);  
   const [loading, setLoading] = useState<boolean>(false);
+
+  // Ref to hold the interval ID for auto-refreshing jobs
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
   
-  // Load jobs on component mount
+  const loadJobs = useCallback(async () => {
+    try {
+      setLoading(true);
+      const response = await fetchJobs();
+      if (!response || !response.job_names) {
+        throw new Error('Invalid response format');
+      }
+      setJobList(response.job_names);
+
+    } catch (error) {
+      console.error('Unable to load jobs:', error);
+
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
-    const loadJobs = async () => {
-      try {
-        setLoading(true);
-        const response = await fetchJobs();
-        if (!response || !response.job_names) {
-          throw new Error('Invalid response format');
-        }
-        setJobList(response.job_names);
+    loadJobs();
+    
+    intervalRef.current = setInterval(() => {
+      loadJobs();
+    }, 60000);
 
-      } catch (error) {
-        throw new Error('Unable to load jobs: ' + error);
-
-      } finally {
-        setLoading(false);
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
       }
     };
-    loadJobs();
-  }, []);
+  }, [loadJobs]);
 
   // Load datasets when job changes
   useEffect(() => {

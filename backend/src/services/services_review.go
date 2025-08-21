@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 )
 
-func (us *UserServices) SavePendingReviewData(body interface{}) int {
+func (js *JointServices) SavePendingReviewData(body interface{}) int {
 	itemsData, ok := body.([]interface{})
 	if !ok {
 		log.Println("SavePendingReview: invalid data format")
@@ -29,38 +29,34 @@ func (us *UserServices) SavePendingReviewData(body interface{}) int {
 		items = append(items, pendingItem)
 	}
 
-	pending := models_verify_viewer.NewPendingReview()
+	pending := models_verify_viewer.NewPendingReview(BackupDir)
 	if len(items) == 0 {
 		log.Println("Empty list provided")
-		us.PendingReviewData.MergePendingReviewItems(pending)
+		js.PendingReviewData.MergePendingReviewItems(pending)
 		log.Println("SavePendingReview: cleaned up pending review items")
 		return -1
 	}
 
 	pending.Items = items
-	us.PendingReviewData.MergePendingReviewItems(pending)
-	if err := us.BackupManager.CreateBackup(us.PendingReviewData); err != nil {
+	js.PendingReviewData.MergePendingReviewItems(pending)
+	if err := js.PendingReviewData.CreateBackup(); err != nil {
 		log.Printf("Warning: Failed to create backup: %v", err)
 	}
 	log.Printf("SavePendingReview: loaded %d items", len(items))
 	return len(items)
 }
 
-func (us *UserServices) GetBackupList() ([]models_verify_viewer.BackupInfo, error) {
-	return us.BackupManager.ListBackups()
+func (js *JointServices) GetBackupList() ([]models_verify_viewer.BackupInfo, error) {
+	return js.PendingReviewData.ListBackups()
 }
 
-func (us *UserServices) RestoreFromBackup(filename string) error {
-	restoredData, err := us.BackupManager.RestoreFromBackup(filename)
+func (js *JointServices) RestoreFromBackup(filename string) error {
+	restoredData, err := js.PendingReviewData.RestoreFromBackup(filename)
 	if err != nil {
 		return err
 	}
 
-	if err := us.BackupManager.CreateBackup(us.PendingReviewData); err != nil {
-		log.Printf("Warning: Failed to create backup before restore: %v", err)
-	}
-
-	us.PendingReviewData = restoredData
+	js.PendingReviewData = restoredData
 	return nil
 }
 
@@ -73,20 +69,20 @@ func getString(m map[string]interface{}, key string) string {
 	return ""
 }
 
-func (us *UserServices) GetPendingReviewItems() []models_verify_viewer.PendingReviewItem {
-	return us.PendingReviewData.Items
+func (js *JointServices) GetPendingReviewItems() []models_verify_viewer.PendingReviewItem {
+	return js.PendingReviewData.Items
 }
 
-func (us *UserServices) ClearPendingReviewData() {
-	if err := us.BackupManager.CreateBackup(us.PendingReviewData); err != nil {
+func (js *JointServices) ClearPendingReviewData() {
+	if err := js.PendingReviewData.CreateBackup(); err != nil {
 		log.Printf("Warning: Failed to create backup before clear: %v", err)
 	}
 
-	us.PendingReviewData.ClearPendingReviewItems()
+	js.PendingReviewData.ClearPendingReviewItems()
 }
 
-func (us *UserServices) GetPendingReviewImagePaths() []string {
-	items := us.GetPendingReviewItems()
+func (js *JointServices) GetPendingReviewImagePaths() []string {
+	items := js.GetPendingReviewItems()
 	imagePaths := make([]string, 0, len(items))
 
 	for _, item := range items {

@@ -30,8 +30,8 @@ func CompressImageSetToBase64(imagpathSet []string) []string {
 
 func CompressImageToBase64(imgPath string) (string, error) {
 	var (
-		maxWidth int     = 150
-		quality  float32 = 90
+		maxWidth int     = 400
+		quality  float32 = 75
 	)
 	log.Printf("Processing image: %s (maxWidth:%v, quality:%v)", imgPath, maxWidth, quality)
 

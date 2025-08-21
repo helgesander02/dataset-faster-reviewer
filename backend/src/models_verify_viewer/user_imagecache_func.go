@@ -51,7 +51,7 @@ func (base64image_cache *Base64ImageCache) FillBase64ImageMap(new_image_name, ne
 	_, exists := base64image_cache.Base64ImageMap[new_image_name]
 	if !exists {
 		base64image_cache.Base64ImageMap[new_image_name] = new_base64image_name
-		log.Printf("New image (%s) added to Base64ImageMap (%s).\n", new_image_name, new_base64image_name)
+		log.Printf("New image (%s) added to Base64ImageMap.\n", new_image_name)
 	} else {
 		log.Println("Image name already exists in Base64ImageMap. Skipping insertion.")
 	}

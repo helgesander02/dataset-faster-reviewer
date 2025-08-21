@@ -7,7 +7,8 @@ import (
 )
 
 type PendingReview struct {
-	Items []PendingReviewItem `json:"items"`
+	backupDir string
+	Items     []PendingReviewItem `json:"items"`
 }
 
 type PendingReviewItem struct {
@@ -17,9 +18,14 @@ type PendingReviewItem struct {
 	ImagePath   string `json:"item_image_path"`
 }
 
-func NewPendingReview() PendingReview {
+func NewPendingReview(backupDir string) PendingReview {
+	if err := os.MkdirAll(backupDir, 0755); err != nil {
+		log.Printf("Failed to create backup directory: %v", err)
+	}
+
 	return PendingReview{
-		Items: NewPendingReviewItemSet(),
+		backupDir: backupDir,
+		Items:     NewPendingReviewItemSet(),
 	}
 }
 
@@ -40,23 +46,8 @@ func NewPendingReviewItemSetByLenght(lenght int) []PendingReviewItem {
 	return make([]PendingReviewItem, 0, lenght)
 }
 
-type BackupManager struct {
-	backupDir string
-}
-
 type BackupInfo struct {
 	Filename  string    `json:"filename"`
 	Timestamp time.Time `json:"timestamp"`
 	ItemCount int       `json:"item_count"`
-}
-
-func NewBackupManager(backupDir string) *BackupManager {
-	bm := &BackupManager{
-		backupDir: backupDir,
-	}
-	if err := os.MkdirAll(bm.backupDir, 0755); err != nil {
-		log.Printf("Failed to create backup directory: %v", err)
-	}
-
-	return bm
 }

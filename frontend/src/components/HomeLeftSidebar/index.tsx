@@ -2,7 +2,7 @@
 
 import { useLeftSidebar } from '@/hooks/useLeftSidebar/useLeftSidebar';
 import '@/styles/HomeLeftSidebar.css';
-
+import { DATASET_PER_PAGE } from '@/services/config';
 import { useJobDataset } from '../JobDatasetContext';
 import { SidebarHeader } from './Header';
 import { DatasetSection } from './DatasetSection';
@@ -35,8 +35,7 @@ export default function LeftSidebar() {
   } = useLeftSidebar();
 
   const onDatasetSelect = (dataset: string, relativeIdx: number) => {
-    // Calculate absolute index based on current pagination and relative index
-    const absoluteIndex = currentPagenation * 12 + relativeIdx; // Assuming DATASET_PER_PAGE is 12
+    const absoluteIndex = currentPagenation * DATASET_PER_PAGE + relativeIdx;
     setselectedPageIndex(absoluteIndex);
     setSelectedDataset(dataset);
   };

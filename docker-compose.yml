@@ -17,8 +17,8 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      - ../example_root:/app/example_root
-      - ../backups:/app/backups     
+      - .../example_root:/app/example_root
+      - .../pii-verifier-web-service/backups:/app/backups     
     networks:
       - app-network
 

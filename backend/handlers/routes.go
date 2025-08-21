@@ -11,6 +11,7 @@ func (handle *Handle) RegisterRoutes(r *gin.Engine) {
 
 		api.POST("/setAllPages", handle.SetAllPageDetails)
 		api.GET("/getAllPages", handle.GetAllPageDetails)
+		api.GET("/getPage", handle.GetPageByPageIndex)
 
 		api.GET("/getBase64ImageSet", handle.GetBase64ImageByPageIndex)
 		api.GET("/getBase64Image", handle.GetBase64ImageByImagePath)

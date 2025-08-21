@@ -39,6 +39,26 @@ paths:
       summary: Get all pages for a job
       tags:
       - pages
+  /api/getBackupList:
+    get:
+      description: Get list of all available backups
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get backup list
+      tags:
+      - backup
   /api/getBase64Image:
     get:
       description: Returns a base64 encoded image for a specific image path in a job
@@ -219,6 +239,50 @@ paths:
       summary: Get pending review image paths
       tags:
       - review
+  /api/restoreFromBackup:
+    post:
+      consumes:
+      - application/json
+      description: Restore pending review data from a specific backup
+      parameters:
+      - description: Backup filename
+        in: body
+        name: body
+        required: true
+        schema:
+          properties:
+            filename:
+              type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Restore from backup
+      tags:
+      - backup
   /api/savePendingReview:
     post:
       consumes:
