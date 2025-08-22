@@ -7,16 +7,21 @@ import (
 func (handle *Handle) RegisterRoutes(r *gin.Engine) {
 	api := r.Group("/api")
 	{
-		api.GET("/folder-structure", handle.FolderStructureHandler)
 		api.GET("/getJobs", handle.GetJobs)
-		api.GET("/getDatasets", handle.GetDatasets)
-		api.GET("/getImages", handle.GetImages)
-		api.GET("/getBase64Images", handle.GetBase64Images)
-		api.GET("/getAllPages", handle.GetAllPages)
-		
+
+		api.POST("/setAllPages", handle.SetAllPageDetails)
+		api.GET("/getAllPages", handle.GetAllPageDetails)
+		api.GET("/getPage", handle.GetPageByPageIndex)
+
+		api.GET("/getBase64ImageSet", handle.GetBase64ImageByPageIndex)
+		api.GET("/getBase64Image", handle.GetBase64ImageByImagePath)
+		api.GET("/getImageSet", handle.GetImageByPageIndex)
+
 		api.POST("/savePendingReview", handle.SavePendingReview)
 		api.GET("/getPendingReview", handle.GetPendingReview)
-		api.POST("/approvedRemove", handle.ApprovedRemove)
-		api.POST("/unapprovedRemove", handle.UnApprovedRemove)
+		api.GET("/getPendingReviewPaths", handle.GetPendingReviewPaths)
+
+		api.GET("/getBackupList", handle.GetBackupList)
+		api.POST("/restoreFromBackup", handle.RestoreFromBackup)
 	}
 }

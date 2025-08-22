@@ -1,6 +1,5 @@
 package config
 
-
 type Config struct {
 	Server   ServerConfig   `mapstructure:"server"`
 	Static   StaticConfig   `mapstructure:"static"`
@@ -13,7 +12,8 @@ type ServerConfig struct {
 }
 
 type StaticConfig struct {
-	Folder string `mapstructure:"folder"`
+	RootFolder   string `mapstructure:"root_folder"`
+	BackupFolder string `mapstructure:"backup_folder"`
 }
 
 type DatabaseConfig struct {

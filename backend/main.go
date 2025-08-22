@@ -6,17 +6,18 @@ import (
 	"flag"
 	"log"
 
+	_ "backend/docs"
+
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/swaggo/http-swagger"
-	_ "backend/docs" 
+	httpSwagger "github.com/swaggo/http-swagger"
 )
 
 var cfg *config.Config
 
 func init() {
 	// Use the Flag manage env variables
-	env := flag.String("env", "development", "Set the environment (development|production)")
+	env := flag.String("env", "production", "Set the environment (development|production)")
 	flag.Parse()
 
 	// load config
@@ -30,19 +31,16 @@ func init() {
 }
 
 func main() {
-	handle := handlers.NewHandle(cfg.GetStaticFolder())
-	handle.SetupAPI()
-
 	r := gin.Default()
 	r.Use(cors.Default())
 
 	// API routes
+	handle := handlers.NewHandle(cfg.GetStaticFolder(), cfg.GetBackupFolder())
 	handle.RegisterRoutes(r)
-	// Static route
-	r.Static("/static", cfg.GetStaticFolder())
 	// Swagger UI route
 	r.GET("/swagger/*any", gin.WrapH(httpSwagger.WrapHandler))
 
+	// Start the server
 	log.Printf("Server started at %s", cfg.GetServerAddress())
 	if err := r.Run(cfg.GetServerAddress()); err != nil {
 		log.Fatal(err)

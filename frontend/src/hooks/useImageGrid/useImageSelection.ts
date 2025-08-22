@@ -4,7 +4,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { useJobDataset } from '@/components/JobDatasetContext';
 
 export function useImageSelection(
-  selectedJob: string | null, allDatasets: string[]
+  selectedJob: string, allDatasets: string[]
 ) {
 
   const [selectedImages, setSelectedImages] = useState<Set<string>>(new Set());

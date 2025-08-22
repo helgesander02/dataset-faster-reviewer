@@ -1,8 +1,6 @@
 import axios from 'axios';
 
-
-//const API_BASE_URL = 'http://10.2.142.123:8123';
-const API_BASE_URL = 'http://127.0.0.1:8080';
+const API_BASE_URL = 'http://localhost:8080';
 const api = axios.create({
     baseURL: API_BASE_URL?.endsWith('/') ? API_BASE_URL : `${API_BASE_URL}/`,
 });
@@ -23,6 +21,28 @@ export interface DatasetsResponse {
     dataset_names: string[];
 }
 
+interface PageItems {
+    item_dataset_name: string;
+    item_image_set: unknown[];
+}
+
+interface GetAllPagesResponse {
+    total_pages: number;
+    pages: PageItems[];
+}
+
+interface ImageToSave {
+    job: string;
+    dataset: string;
+    imageName: string;
+    imagePath: string;
+}
+
+export interface SavePendingReviewPayload {
+    images: ImageToSave[];
+}
+
+
 export const fetchJobs = async (): Promise<JobsResponse> => {
     try {
         const response = await api.get('/api/getJobs');
@@ -35,11 +55,22 @@ export const fetchJobs = async (): Promise<JobsResponse> => {
 };
 
 export const fetchDatasets = async (job: string): Promise<DatasetsResponse> => {
+    if (!job) {
+        throw new Error('The "job" parameter is required to fetch datasets.');
+    }
+    
     try {
-        const response = await api.get('/api/getDatasets', { params: { job } });
-        console.log(`Fetching datasets for job ${job}`);
+        const response = await api.get<GetAllPagesResponse>('/api/getAllPages', { params: { job } });
+        console.log(`Fetching datasets for job "${job}"`);
         console.log(response.data);
-        return response.data;
+        
+        const datasetNames = response.data.pages
+            .map(page => page.item_dataset_name)
+            .filter(name => name && name.trim() !== ''); 
+        
+        return {
+            dataset_names: datasetNames
+        };
         
     } catch (error) {
         console.error('Error fetching datasets:', error);
@@ -47,28 +78,50 @@ export const fetchDatasets = async (job: string): Promise<DatasetsResponse> => {
     }
 };
 
-export const fetchImages = async (job: string, dataset: string) => {
+
+export const fetchBase64Images = async (job: string, pageIndex: number) => {
     try {
-        const response = await api.get('/api/getImages', { params: { job, dataset } });
-        console.log(`Fetching images for job ${job} and dataset ${dataset}`);
-        console.log(response.data);
-        return response.data;
+        const response = await api.get('/api/getBase64ImageSet', { params: { job, pageIndex } });
+        return {
+            image_path_set: response.data.image_path,
+            base64_image_set: response.data.base64_image,
+        };
     } catch (error) {
-        console.error('Error fetching images:', error);
+        console.error('Error fetching base64 images:', error);
         throw error;
     }
 };
 
-export const fetchBase64Images = async (job: string, dataset: string, pageIndex: number, pageNumber: number) => {
+export const fetchImages = async (job: string, pageIndex: number) => {
     try {
-        const response = await api.get('/api/getBase64Images', { params: { job, dataset, pageIndex, pageNumber } });
+        const response = await api.get('/api/getImageSet', { params: { job, pageIndex } });
         console.log(response.data);
         return {
-            maxPage: response.data.max_page, // 解析 max_page
-            images: response.data.images,
+            image_name_set: response.data.image_name,
+            image_path_set: response.data.image_path,
         };
     } catch (error) {
         console.error('Error fetching base64 images:', error);
+        throw error;
+    }
+};
+
+export const updateALLPages = async (job: string, pageSize: number) => {
+    if (!job) {
+        throw new Error('The "job" parameter is required to update all pages.');
+    }
+    
+    if (!pageSize || pageSize <= 0) {
+        throw new Error('The "pageSize" parameter is required and must be greater than 0.');
+    }
+    
+    try {
+        const response = await api.post('/api/setAllPages', {job, pageSize});
+        
+        console.log(`Updated all pages for job ${job} with pageSize ${pageSize}:`, response.data);
+        return response.data;
+    } catch (error) {
+        console.error('Error updating all pages:', error);
         throw error;
     }
 };
@@ -78,6 +131,7 @@ export const fetchALLPages = async (job: string) => {
         throw new Error('The "job" parameter is required to fetch all pages.');
     }
     try {
+        
         const response = await api.get('/api/getAllPages', { params: { job } });
         console.log(`Fetched all pages for job ${job}:`, response.data);
         return response.data;
@@ -87,7 +141,8 @@ export const fetchALLPages = async (job: string) => {
     }
 };
 
-export const savePendingReview = async (data: any) => {
+// FIX 2: Updated function signature to use the new interface
+export const savePendingReview = async (data: SavePendingReviewPayload) => {
     try {
         console.log('Saving pending review data:', data);
         const response = await api.post('/api/savePendingReview', data.images);
@@ -106,28 +161,6 @@ export const getPendingReview = async (flatten: boolean = false) => {
         return response.data;
     } catch (error) {
         console.error('Error fetching pending review data:', error);
-        throw error;
-    }
-};
-
-export const approvedRemove = async () => {
-    try {
-        const response = await api.post('/api/approvedRemove');
-        console.log('Approved items removed:', response.data);
-        return response.data;
-    } catch (error) {
-        console.error('Error removing approved items:', error);
-        throw error;
-    }
-};
-
-export const unApprovedRemove = async () => {
-    try {
-        const response = await api.post('/api/unapprovedRemove');
-        console.log('Unapproved items cleared:', response.data);
-        return response.data;
-    } catch (error) {
-        console.error('Error clearing unapproved items:', error);
         throw error;
     }
 };

@@ -1,8 +1,9 @@
 "use client";
 
-import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
+import React, { createContext, useState, useContext, ReactNode, useEffect, useCallback } from 'react';
 import { CachedImage, JobDatasetContextType } from '@/types/JobDatasetContext';
-import { getPendingReview, fetchALLPages } from '@/services/api';
+import { getPendingReview, updateALLPages } from '@/services/api';
+import { IMAGES_PER_PAGE } from '@/services/config';
 
 const JobDatasetContext = createContext<JobDatasetContextType | undefined>(undefined);
 
@@ -13,24 +14,54 @@ const JobDatasetContext = createContext<JobDatasetContextType | undefined>(undef
  * props:
  * - children: ReactNode - The child components that will have access to this context.
  * * This context includes:
- * - selectedJob:           string - The currently selected job.
- * - selectedDataset:       string - The currently selected dataset.
- * - currentPage:           number - The current page of datasets being displayed.
- * - setSelectedJob:        function - Function to set the selected job.
- * - setSelectedDataset:    function - Function to set the selected dataset.
- * - setCurrentPage:        function - Function to set the current page.
- * - cachedImages:          CachedImage[] - Array of cached images for the selected job and dataset.
- * - addImageToCache:       function - Function to add an image to the cache.
- * - removeImageFromCache:  function - Function to remove an image from the cache.
- * - getCache:              function - Function to retrieve cached images for a specific job and dataset.
- * - jobPages:              string[] - Array of pages for the selected job.
+ * - selectedJob: string - The currently selected job.
+ * - selectedPages: string - The currently selected pages for the job.
+ * - selectedDataset: string - The currently selected dataset.
+ * - selectedPageIndex: number - The index of the currently selected page.
+ * - setSelectedJob: (job: string) => void - Function to set the selected job.
+ * - setSelectedPages: (pages: string) => void - Function to set the selected pages.
+ * - setSelectedDataset: (dataset: string) => void - Function to set the selected dataset.
+ * - setselectedPageIndex: (index: number) => void - Function to set the selected page index.
+ * - cachedImages: CachedImage[] - Array of cached images.
+ * - addImageToCache: (job: string, dataset: string, imageName: string, imagePath: string) => void - Function to add an image to the cache.
+ * - removeImageFromCache: (imagePath: string) => void - Function to remove an image from the cache.
+ * - getCache: (job: string, dataset: string) => string[] - Function to get cached image paths for a specific job and dataset.s
  */
 export function JobDatasetProvider({ children }: { children: ReactNode }) {
   const [selectedJob, setSelectedJob] = useState<string>('');
+  const [selectedPages, setSelectedPages] = useState<string>('');
   const [selectedDataset, setSelectedDataset] = useState<string>('');
-  const [currentPage, setCurrentPage] = useState<number>(0);
+  const [selectedPageIndex, setselectedPageIndex] = useState<number>(0);
   const [cachedImages, setCachedImages] = useState<CachedImage[]>([]);
-  const [jobPages, setJobPages] = useState<string[]>([]);
+  
+  // Function to add an image to the cache
+  const addImageToCache = useCallback((item_job_name: string, item_dataset_name: string, item_image_name: string, item_image_path: string) => {
+    setCachedImages(prev => {
+      const exists = prev.some(
+        img => img.item_job_name === item_job_name && 
+               img.item_dataset_name === item_dataset_name && 
+               img.item_image_path === item_image_path && 
+               img.item_image_name === item_image_name
+      );
+
+      if (!exists) {
+        const newCachedImage: CachedImage = { item_job_name, item_dataset_name, item_image_name, item_image_path };
+        return [newCachedImage, ...prev];
+      }
+      return prev;
+    });
+  }, []);
+
+  // Function to remove an image from the cache
+  const removeImageFromCache = useCallback((imagePath: string) => {
+    setCachedImages(prev => prev.filter(img => img.item_image_path !== imagePath));
+  }, []);
+
+  const getCache = useCallback((job: string, dataset: string) => {
+    return cachedImages
+      .filter(img => img.item_job_name === job && img.item_dataset_name === dataset)
+      .map(img => img.item_image_path);
+  }, [cachedImages]);
 
   // Load pending review images on initial render
   useEffect(() => {
@@ -38,7 +69,7 @@ export function JobDatasetProvider({ children }: { children: ReactNode }) {
       try {
         const data = await getPendingReview(true);
         data.items.forEach((item: CachedImage) => {
-          addImageToCache(item.job, item.dataset, item.imageName, item.imagePath);
+          addImageToCache(item.item_job_name, item.item_dataset_name, item.item_image_name, item.item_image_path);
         });
       } catch (error) {
         throw new Error('Error loading pending review: ' + error);
@@ -46,68 +77,40 @@ export function JobDatasetProvider({ children }: { children: ReactNode }) {
     }
 
     loadPending();
-  }, []);
+  }, [addImageToCache]);
 
-  // Fetch job pages when selectedJob changes
+  // Update job pages when selectedJob changes
   useEffect(() => {
-    async function fetchJobPages() {
-      if (!selectedJob) {
-        setJobPages([]);
-        return;
-      }
+    async function updatePageData() {
+      if (!selectedJob) return;
 
       try {
-        await new Promise(resolve => setTimeout(resolve, 1000)); // wait backend to be ready
-        const response = await fetchALLPages(selectedJob);
-        const pages = Array.isArray(response.pages) ? response.pages : Object.values(response.pages);
-        setJobPages(pages);
+        await updateALLPages(selectedJob, IMAGES_PER_PAGE);
+        setSelectedPages(selectedJob);
 
       } catch (error) {
-        setJobPages([]);
         throw new Error('Error fetching job pages: ' + error);
       }
     }
 
-    fetchJobPages();
+    updatePageData();
   }, [selectedJob]);
-
-  // Function to add an image to the cache
-  const addImageToCache = (job: string, dataset: string, imageName: string, imagePath: string) => {
-    const exists = cachedImages.some(
-      img => img.job === job && img.dataset === dataset && img.imagePath === imagePath && img.imageName === imageName
-    );
-
-    if (!exists) {
-      const newCachedImage: CachedImage = { job, dataset, imageName, imagePath };
-      setCachedImages(prev => [newCachedImage, ...prev]);
-    }
-  };
-
-  // Function to remove an image from the cache
-  const removeImageFromCache = (imagePath: string) => {
-    setCachedImages(prev => prev.filter(img => img.imagePath !== imagePath));
-  };
-
-  const getCache = (job: string, dataset: string) => {
-    return cachedImages
-      .filter(img => img.job === job && img.dataset === dataset)
-      .map(img => img.imagePath);
-  };
 
   return (
     <JobDatasetContext.Provider
       value={{
         selectedJob,
+        selectedPages,
         selectedDataset,
-        currentPage,
+        selectedPageIndex,
         setSelectedJob,
+        setSelectedPages,
         setSelectedDataset,
-        setCurrentPage,
+        setselectedPageIndex,
         cachedImages,
         addImageToCache,
         removeImageFromCache,
         getCache,
-        jobPages,
       }}
     >
       {children}

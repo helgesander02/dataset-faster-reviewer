@@ -1,9 +1,10 @@
 server:
-  port: ""
-  host: ""
+  port: "8080"
+  host: "localhost"
 
 static:
-  folder: ""
+  root_folder: "/app/example_root/image_root/unverify"
+  backup_folder: "/app/backups"
 
 database:
   host: ""
@@ -12,15 +13,11 @@ database:
   password: ""
   database: ""
 
-#logging:
-#  level: "info"
-#  format: "json"
-#
-#cors:
-#  allowed_origins: ["https://yourdomain.com"]
-#  allowed_methods: ["GET", "POST", "PUT", "DELETE"]
-#  allowed_headers: ["Content-Type", "Authorization"]
-#
-#security:
-#  rate_limit: 1000
-#  timeout: 30 
+logging:
+  level: "debug"
+  format: "console"
+
+cors:
+  allowed_origins: ["http://localhost:3000", "http://frontend:3000"]
+  allowed_methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+  allowed_headers: ["*"]

@@ -3,7 +3,9 @@ server:
   host: "localhost"
 
 static:
-  folder: "../example_root"
+  root_folder: "../example_root/image_root/unverify"
+  backup_folder: "../backups"
+
 
 database:
   host: ""

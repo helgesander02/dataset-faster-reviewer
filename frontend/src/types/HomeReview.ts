@@ -47,10 +47,10 @@ export interface ReviewActionsProps {
 
 // useHomeReview.ts
 export interface ReviewItem {
-    job: string;
-    dataset: string;
-    imageName: string;
-    imagePath: string;
+    item_job_name:     string;
+    item_dataset_name: string;
+    item_image_name:   string;
+    item_image_path:   string;
 }
 
 export interface PendingReviewData {

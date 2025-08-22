@@ -4,19 +4,26 @@ import React from 'react';
 import { HomeImageGridProps } from '@/types/HomeImageGrid';
 import LoadingState from './LoadingState';
 import ImageItem from './ImageItem';
+import { memo } from 'react';
 
-export default function HomeImageGrid({ 
-  images, selectedImages, isLoading, datasetName,
-  onImageClick,  
+export default memo(function HomeImageGrid({ 
+  images, 
+  selectedImages, 
+  isLoading,
+  onImageClick, 
 }: HomeImageGridProps) {
-
-  if (isLoading) {
+  
+  if (isLoading && images.length === 0) {
     return <LoadingState />;
   }
 
   return (
     <div className="image-grid-section">
-      <div className="image-grid">
+      <div 
+        className="image-grid"
+        role="grid"
+        aria-label="Image grid"
+      >
         {images.map((image, index) => {
           const isSelected = selectedImages.has(image.url);
           return (
@@ -30,6 +37,12 @@ export default function HomeImageGrid({
           );
         })}
       </div>
+      
+      {!isLoading && images.length === 0 && (
+        <div className="no-images" role="alert">
+          <p>No images found in this page</p>
+        </div>
+      )}
     </div>
   );
-}
+});

@@ -46,7 +46,8 @@ func setDefaults() {
 	viper.SetDefault("server.host", "localhost")
 
 	// static folder default value
-	viper.SetDefault("static.folder", "./static")
+	viper.SetDefault("static.root_folder", "./static")
+	viper.SetDefault("static.backup_folder", "./static")
 
 	// database config default value
 	viper.SetDefault("database.host", "")
@@ -56,10 +57,13 @@ func setDefaults() {
 	viper.SetDefault("database.database", "")
 }
 
-// Configuration Verification 
+// Configuration Verification
 func validateConfig(config *Config) error {
-	if config.Static.Folder == "" {
+	if config.Static.RootFolder == "" {
 		return fmt.Errorf("STATIC_FOLDER is empty")
+	}
+	if config.Static.BackupFolder == "" {
+		return fmt.Errorf("BACKUP_FOLDER is empty")
 	}
 	if config.Server.Host == "" {
 		return fmt.Errorf("Host is empty")
@@ -69,4 +73,3 @@ func validateConfig(config *Config) error {
 	}
 	return nil
 }
-

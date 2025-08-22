@@ -9,6 +9,7 @@ This project is a RESTful API service based on Go, mainly used for managing and 
 - **flag**: Used for managing startup parameters, such as `--env` to specify different runtime environments (development/production).
 - **viper**: A powerful configuration management tool that automatically loads the corresponding YAML config file based on the specified environment and supports environment variable overrides.
 - **fsnotify**: Directory monitoring tool, mainly used to watch for real-time changes (add, delete, modify) in the jobs directory and automatically refresh the data structure.
+- **go-cache**: An in-memory key:value store for caching data in Go. It's used to temporarily store data (like API responses or database query results) to improve performance and reduce repeated processing.
 - **Swagger**: Automatically generates API documentation, making it easy for developers to browse and test the API.
 
 ## Configuration Management (flag + viper)

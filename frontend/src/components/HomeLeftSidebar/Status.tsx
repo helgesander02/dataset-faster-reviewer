@@ -3,12 +3,11 @@ import { StatusProps } from '@/types/HomeLeftSidebar';
 export default function Status({ 
   selectedJob, selectedDataset 
 }: StatusProps) {
-  
   return (
     <div className="status">
       {selectedJob && selectedDataset ? (
         <div className="ok">
-          Selected: {selectedJob} / {selectedDataset}
+          Selected:  {selectedDataset}
         </div>
       ) : (
         <div className="warn">

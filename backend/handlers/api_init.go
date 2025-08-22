@@ -1,20 +1,20 @@
 package handlers
 
 import (
-	"backend/services"
+	"backend/src/services"
 )
 
 type Handle struct {
-	DM *services.DataManager
+	UserServices  *services.UserServices
+	JointServices *services.JointServices
 }
 
-func NewHandle(root string) *Handle {
-	dm := services.NewDataManager(root)
-	dm.SetupServices()
+func NewHandle(root string, backupDir string) *Handle {
+	services.ImageRoot = root
+	services.BackupDir = backupDir
+	us := services.NewUserServices()
+	js := services.NewJointServices()
 
-	return &Handle{DM: dm}
-}
-
-func (handle *Handle) SetupAPI() {
-	handle.DM.ConcurrentJobScanner()
+	services.CheckServicesState(us, js)
+	return &Handle{UserServices: us, JointServices: js}
 }

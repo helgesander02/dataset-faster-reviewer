@@ -1,19 +1,18 @@
 "use client";
 
+import Image from 'next/image';
 import { Check, ImageIcon } from 'lucide-react';
 import { ImageItemProps } from '@/types/HomeReview';
+import { useState } from 'react';
 
 export function ImageItem({ 
   item, index, isSelected, 
   onToggle 
 }: ImageItemProps) {
+  const [imageError, setImageError] = useState(false);
 
-  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
-    e.currentTarget.style.display = 'none';
-    const fallback = e.currentTarget.nextElementSibling as HTMLElement;
-    if (fallback) {
-      fallback.style.display = 'flex';
-    }
+  const handleImageError = () => {
+    setImageError(true);
   };
 
   return (
@@ -21,15 +20,20 @@ export function ImageItem({
       className={`home-review-image-item ${isSelected ? 'selected' : ''}`}
       onClick={() => onToggle(item)}
     >
-      <img 
-        src={item.imagePath} 
-        alt={`Image ${index + 1}`}
-        className="home-review-image"
-        onError={handleImageError}
-      />
-      <div className="home-review-image-fallback">
-        <ImageIcon size={32} />
-      </div>
+      {!imageError ? (
+        <Image 
+          src={item.item_image_path} 
+          alt={`Image ${index + 1}`}
+          width={150}
+          height={150}
+          className="home-review-image"
+          onError={handleImageError}
+        />
+      ) : (
+        <div className="home-review-image-fallback">
+          <ImageIcon size={32} />
+        </div>
+      )}
       {isSelected && (
         <div className="home-review-selection-indicator">
           <Check size={16} />

@@ -43,7 +43,7 @@
 
 .dataset-container {
   overflow: auto;
-  height: calc(100vh - 200px); 
+  height: calc(100vh - 220px); 
   min-height: 300px; 
   max-height: 1400px; 
   margin-bottom: 1rem;

@@ -6,14 +6,14 @@ import { savePendingReview } from '@/services/api';
 import { RightSidebarState, RightSidebarActions, SaveData, CachedImage } from '@/types/HomeRightSidebar';
 
 export function useRightSidebar(): RightSidebarState & RightSidebarActions {
-  const { selectedJob, selectedDataset, cachedImages } = useJobDataset();
+  const { selectedPages, selectedDataset, cachedImages } = useJobDataset();
   const [isReviewOpen, setIsReviewOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
 
   // Function to handle saving pending review
   const handleSave = async () => {
-    if (!selectedJob || !selectedDataset || cachedImages.length === 0) {
+    if (!selectedPages || !selectedDataset || cachedImages.length === 0) {
       console.log('No job, dataset, or images selected for saving.');
       alert('Please select a job, dataset, and ensure there are images to save.');
       return;
@@ -24,13 +24,13 @@ export function useRightSidebar(): RightSidebarState & RightSidebarActions {
       setSaveSuccess(false);
       
       const saveData: SaveData = {
-        job: selectedJob,
+        job: selectedPages,
         dataset: selectedDataset,
         images: cachedImages.map(img => ({
-          job: img.job,
-          dataset: img.dataset,
-          imageName: img.imageName,
-          imagePath: img.imagePath
+          job: img.item_job_name,
+          dataset: img.item_dataset_name,
+          imageName: img.item_image_name,
+          imagePath: img.item_image_path
         })),
         timestamp: new Date().toISOString()
       };
@@ -62,7 +62,7 @@ export function useRightSidebar(): RightSidebarState & RightSidebarActions {
 
   // Group cached images by job and dataset
   const groupedImages = cachedImages.reduce((acc, img) => {
-    const key = `${img.job}`;
+    const key = `${img.item_job_name}`;
     if (!acc[key]) {
       acc[key] = [];
     }

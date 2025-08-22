@@ -4,29 +4,31 @@ import React from 'react';
 import { DatasetGridProps } from '@/types/HomeLeftSidebar';
 
 export default function DatasetGrid({ 
-  currentPagenation, datasetsPerPage, currentDatasets, selectedDataset, 
+  currentPagenation, datasetsPerPage, currentDatasetList, selectedPageIndex, 
   onDatasetSelect 
 }: DatasetGridProps) {
 
   const getCurrentPageDatasets = () => {
     const startIndex = currentPagenation * datasetsPerPage;
-    return currentDatasets.slice(startIndex, startIndex + datasetsPerPage);
+    return currentDatasetList.slice(startIndex, startIndex + datasetsPerPage);
   };
 
   return (
     <div className="dataset-container">
       <p className="dataset-label">Select a Dataset:</p>
       <div className="dataset-grid">
-        {getCurrentPageDatasets().map((dataset, i) => {
-          const isSelected = dataset === selectedDataset;
+        {getCurrentPageDatasets().map((dataset, idx) => {
+          const absoluteIndex = currentPagenation * datasetsPerPage + idx;
+          const isSelected = absoluteIndex === selectedPageIndex;
+          
           return (
             <div 
-              key       = {dataset} 
+              key       = {idx} 
               className = {`dataset-item ${isSelected ? 'dataset-item-selected' : ''}`}
-              onClick   = {() => onDatasetSelect(dataset)}
+              onClick   = {() => onDatasetSelect(dataset, idx)}
               title     = {dataset}
             >
-              {i + 1 + currentPagenation * datasetsPerPage}
+              {absoluteIndex + 1}
             </div>
           );
         })}

@@ -1,7 +1,7 @@
 //
 //
 //
-export const DATASET_PER_PAGE = 80;
+export const DATASET_PER_PAGE = 100;
 
 //
 //

@@ -7,14 +7,14 @@ export function useDatasets(
   selectedJob: string | null
 ) {
 
-  const [allDatasets, setAllDatasets] = useState<string[]>([]);
+  const [DatasetList, setDatasetList] = useState<string[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
 
   // This effect fetches datasets when the selected job changes
   useEffect(() => {
     const loadDatasets = async () => {
       if (!selectedJob) {
-        setAllDatasets([]);
+        setDatasetList([]);
         return;
       }
 
@@ -22,11 +22,11 @@ export function useDatasets(
         setLoading(true);
         const response = await fetchDatasets(selectedJob);
         const datasets = response.dataset_names || [];
-        setAllDatasets(datasets);
+        setDatasetList(datasets);
 
       } catch (error) {
         console.error('Error loading datasets:', error);
-        setAllDatasets([]);
+        setDatasetList([]);
 
       } finally {
         setLoading(false);
@@ -37,7 +37,7 @@ export function useDatasets(
   }, [selectedJob]);
 
   return { 
-    allDatasets, 
+    DatasetList, 
     loading 
   };
 }

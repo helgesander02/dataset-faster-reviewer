@@ -3,205 +3,228 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { fetchALLPages } from '@/services/api';
 import { ImagePage } from '@/types/HomeImageGrid';
-import { usePageObserver } from './usePageObserver';
 import { useImagePageLoader } from './useImagePageLoader';
 
 export function useInfiniteImages(
-  selectedJob: string | null, selectedDataset: string | null, allDatasets: string[], currentPage: number,
-  setSelectedDataset: (dataset: string) => void, setCurrentPage: (page: number) => void
+  selectedPages: string, 
+  selectedDataset: string, 
+  DatasetList: string[], 
+  selectedPageIndex: number,
+  setSelectedDataset: (dataset: string) => void
 ) {
-
-  const [maxPageIndex, setMaxPageIndex] = useState<number>(0); 
-  const [allImagePages, setAllImagePages] = useState<ImagePage[]>([]);
+  const [totalPages, setTotalPages] = useState<number>(0);
+  const [pagesData, setPagesData] = useState<Map<number, ImagePage>>(new Map());
   const [loading, setLoading] = useState<boolean>(false);
-  const [currentPageIndex, setCurrentPageIndex] = useState<number>(0);
-  const [currentDatasetIndex, setCurrentDatasetIndex] = useState<number>(0);
-  const [hasMore, setHasMore] = useState<boolean>(true);
-  
   const [currentJobDatasetKey, setCurrentJobDatasetKey] = useState<string>('');
+  const [allPagesInfo, setAllPagesInfo] = useState<{ item_dataset_name?: string }[]>([]);
+  
   const isInitializingRef = useRef<boolean>(false);
+  const loadingPromises = useRef<Map<number, Promise<unknown>>>(new Map());
 
-  const { registerPageElement, cleanupObservers } = usePageObserver();
   const { loadPageImages, clearLoadedPages } = useImagePageLoader();
 
-  const updateCurrentPageIndex = useCallback((newPageIndex: number) => {
-    if (newPageIndex !== currentPageIndex) {
-      setCurrentPageIndex(newPageIndex);
-      setCurrentPage(newPageIndex);
+  const initializeTotalPages = useCallback(async () => {
+    if (!selectedPages) {
+      setTotalPages(0);
+      setAllPagesInfo([]);
+      return;
     }
-  }, [currentPageIndex, setCurrentPage]);
 
-  // This function registers the page element for the infinite scroll functionality
-  const registerPageElementWithCallback = useCallback((pageIndex: number, element: HTMLElement | null) => {
-    registerPageElement(pageIndex, element, updateCurrentPageIndex);
-  }, [registerPageElement, updateCurrentPageIndex]);
-
-  // This effect updates the current dataset index based on the current page index
-  useEffect(() => {
-    const fetchCurrentDatasetByCurrentPage = async () => {
-      try {
-        if (currentPageIndex <= 0 || !selectedJob || !selectedDataset) {
-          console.warn('Invalid page index or no job selected, skipping dataset detail fetch.');
-          return;
+    try {
+      const response = await fetchALLPages(selectedPages);
+      const totalPagesCount = response.total_pages || 0;
+      const pages = Array.isArray(response.pages) ? response.pages : Object.values(response.pages || {});
+      
+      setTotalPages(totalPagesCount);
+      setAllPagesInfo(pages);
+      
+      if (pages.length > 0 && !selectedDataset) {
+        const firstPage = pages[0];
+        if (firstPage?.item_dataset_name) {
+          setSelectedDataset(firstPage.item_dataset_name);
         }
-        const response = await fetchALLPages(selectedJob);
-        const pages = Array.isArray(response.pages) ? response.pages : Object.values(response.pages);
-        setSelectedDataset(pages[currentPageIndex]);
-        console.log(`Current dataset detail fetched for page index ${currentPageIndex}: ${pages[currentPageIndex]}`);
-        
-      } catch (error) {
-        console.error(`Error fetching details for dataset ${selectedDataset}:`, error);
       }
+    } catch (error) {
+      console.error('Error fetching total pages:', error);
+      setTotalPages(0);
+      setAllPagesInfo([]);
+    }
+  }, [selectedPages, selectedDataset, setSelectedDataset]);
+
+  const loadPage = useCallback(async (pageIndex: number): Promise<ImagePage | null> => {
+    if (!selectedPages || pageIndex < 0 || pageIndex >= totalPages) {
+      return null;
+    }
+    const existingPage = pagesData.get(pageIndex);
+    if (existingPage || loadingPromises.current.has(pageIndex)) {
+      return existingPage || null;
+    }
+
+    let targetDataset = selectedDataset;
+    if (allPagesInfo.length > pageIndex) {
+      const pageInfo = allPagesInfo[pageIndex];
+      if (pageInfo?.item_dataset_name) {
+        targetDataset = pageInfo.item_dataset_name;
+        if (targetDataset !== selectedDataset) {
+          setSelectedDataset(targetDataset);
+        }
+      }
+    }
+
+    if (!targetDataset) {
+      console.error(`No dataset found for page ${pageIndex}`);
+      return null;
+    }
+
+    setPagesData((prev: Map<number, ImagePage>) => new Map(prev).set(pageIndex, {
+      dataset: targetDataset,
+      images: [],
+      isNewDataset: false
+    }));
+
+    const loadPromise = loadPageImages(selectedPages, targetDataset, pageIndex);
+    loadingPromises.current.set(pageIndex, loadPromise);
+
+    try {
+      const result = await loadPromise;
+      if (result?.imagePage) {
+        setPagesData((prev: Map<number, ImagePage>) => new Map(prev).set(pageIndex, result.imagePage));
+        return result.imagePage;
+      }
+    } catch (error) {
+      console.error(`Error loading page ${pageIndex}:`, error);
+      setPagesData((prev: Map<number, ImagePage>) => {
+        const newMap = new Map(prev);
+        newMap.delete(pageIndex);
+        return newMap;
+      });
+    } finally {
+      loadingPromises.current.delete(pageIndex);
+    }
+
+    return null;
+  }, [selectedPages, totalPages, selectedDataset, allPagesInfo, loadPageImages, setSelectedDataset, pagesData]);
+
+  const preloadAdjacentPages = useCallback((centerIndex: number, range: number = 1) => {
+    if (totalPages === 0) return;
+    
+    const startIndex = Math.max(0, centerIndex - range);
+    const endIndex = Math.min(totalPages - 1, centerIndex + range);
+    
+    for (let i = startIndex; i <= endIndex; i++) {
+      if (!pagesData.has(i) && !loadingPromises.current.has(i)) {
+        loadPage(i);
+      }
+    }
+  }, [totalPages, pagesData, loadPage]);
+
+  const getPageData = useCallback((pageIndex: number) => {
+    const page = pagesData.get(pageIndex);
+    const isLoading = loadingPromises.current.has(pageIndex);
+    
+    // 獲取頁面對應的數據集
+    let dataset = selectedDataset;
+    if (allPagesInfo.length > pageIndex) {
+      const pageInfo = allPagesInfo[pageIndex];
+      if (pageInfo?.item_dataset_name) {
+        dataset = pageInfo.item_dataset_name;
+      }
+    }
+    
+    return {
+      pageIndex,
+      dataset: dataset || 'Unknown',
+      images: page?.images || [],
+      isLoading: isLoading && !page,
+      isEmpty: !isLoading && !page?.images?.length && page !== undefined
     };
+  }, [pagesData, selectedDataset, allPagesInfo]);
 
-    fetchCurrentDatasetByCurrentPage();
-  }, [currentPageIndex, selectedJob, selectedDataset, setSelectedDataset]);
-
-  // This function resets the images and clears all observers
   const resetImages = useCallback(() => {
     console.log('Resetting images...');
-    cleanupObservers();
-    setAllImagePages([]);
-    setCurrentPageIndex(0);
-    setCurrentDatasetIndex(0);
-    setHasMore(true);
+    
+    loadingPromises.current.clear();
+    
+    setPagesData(new Map());
+    setTotalPages(0);
+    setAllPagesInfo([]);
+    setLoading(false);
     setCurrentJobDatasetKey('');
-    setMaxPageIndex(0);
     clearLoadedPages();
     isInitializingRef.current = false;
-  }, [cleanupObservers, clearLoadedPages]);
+  }, [clearLoadedPages]);
 
-  // This function initializes the images for the selected job and datasets
   const initializeImages = useCallback(async () => {
-    if (!selectedJob || allDatasets.length === 0) {
+    if (!selectedPages || DatasetList.length === 0) {
       resetImages();
       return;
     }
 
-    const newJobDatasetKey = `${selectedJob}-${allDatasets.join(',')}-${allDatasets.length}`;
+    const newJobDatasetKey = `${selectedPages}-${DatasetList.join(',')}-${DatasetList.length}`;
     
-    if (currentJobDatasetKey === newJobDatasetKey) {
-      console.log('Already initialized for this job and datasets, skipping...');
+    if (currentJobDatasetKey === newJobDatasetKey && totalPages > 0) {
       return;
     }
 
     if (isInitializingRef.current) {
-      console.log('Already initializing, skipping...');
       return;
     }
 
     try {
-      console.log(`Initializing images for job: ${selectedJob}, datasets: ${allDatasets.join(',')}`);
+      console.log('Initializing images for job:', selectedPages);
       isInitializingRef.current = true;
       setLoading(true);
       
-      cleanupObservers();
-      setAllImagePages([]);
-      setCurrentPageIndex(0);
-      setCurrentDatasetIndex(0);
-      setHasMore(true);
+      setPagesData(new Map());
       clearLoadedPages();
+    
+      await initializeTotalPages();
       
-      const firstDataset = allDatasets[0];
-      const firstPage = await loadPageImages(selectedJob, firstDataset, 0);
-      
-      if (firstPage) {
-        setAllImagePages([firstPage.imagePage]);
-        setCurrentPageIndex(0);
-        setCurrentDatasetIndex(0);
-        setHasMore(firstPage.maxPage > 0);
-        setCurrentJobDatasetKey(newJobDatasetKey);
-        setCurrentPage(0);
-      } else {
-        setAllImagePages([]);
-        setHasMore(false);
-        setCurrentJobDatasetKey(newJobDatasetKey);
-      }
+      setCurrentJobDatasetKey(newJobDatasetKey);
       
     } catch (error) {
       console.error('Error initializing images:', error);
-      setAllImagePages([]);
-      setHasMore(false);
     } finally {
       setLoading(false);
       isInitializingRef.current = false;
     }
-  }, [selectedJob, allDatasets, loadPageImages, currentJobDatasetKey, resetImages, cleanupObservers, clearLoadedPages, setCurrentPage]);
+  }, [selectedPages, DatasetList, currentJobDatasetKey, resetImages, clearLoadedPages, initializeTotalPages, totalPages]);
 
-  // This effect initializes images when the selected job or datasets change
   useEffect(() => {
-    if (selectedJob && allDatasets.length > 0) {
-      const newJobDatasetKey = `${selectedJob}-${allDatasets.join(',')}-${allDatasets.length}`;
+    if (selectedPages && DatasetList.length > 0) {
+      const newJobDatasetKey = `${selectedPages}-${DatasetList.join(',')}-${DatasetList.length}`;
       
       if (currentJobDatasetKey !== newJobDatasetKey) {
-        console.log('Job or datasets changed, initializing...');
         initializeImages();
       }
-    } else if (!selectedJob) {
+    } else if (!selectedPages) {
       resetImages();
     }
-  }, [selectedJob, allDatasets, currentJobDatasetKey, initializeImages, resetImages]);
-
-  // This function loads the next page of images for the current dataset
-  const loadNextPage = useCallback(async () => {
-    if (!selectedJob || loading || !hasMore || currentDatasetIndex >= allDatasets.length || isInitializingRef.current) {
-      return;
-    }
-
-    try {
-      setLoading(true);
-      const currentDataset = allDatasets[currentDatasetIndex];
-      const nextPageIndex = currentPageIndex + 1;
-      
-      if (nextPageIndex >= maxPageIndex && maxPageIndex > 0) {
-        console.warn(`No more pages available for dataset ${currentDataset} at index ${currentDatasetIndex}`);
-        setHasMore(false);
-        return;
-      }
-      
-      const response = await loadPageImages(selectedJob, currentDataset, nextPageIndex);
-      if (response) {
-        const { imagePage, maxPage } = response;
-        setMaxPageIndex(maxPage);
-        setAllImagePages(prev => [...prev, imagePage]);
-
-        if (nextPageIndex >= maxPage) {
-          setHasMore(false);
-        }
-      } else {
-        setHasMore(false);
-      }
-    } catch (error) {
-      console.error('Error loading next page:', error);
-      setHasMore(false);
-    } finally {
-      setLoading(false);
-    }
-  }, [selectedJob, loading, hasMore, currentDatasetIndex, currentPageIndex, allDatasets, loadPageImages, maxPageIndex]);
-
-  const getCurrentImagePages = useCallback(() => {
-    return allImagePages;
-  }, [allImagePages]);
-
-  const hasMorePages = useCallback(() => {
-    return hasMore;
-  }, [hasMore]);
+  }, [selectedPages, DatasetList, currentJobDatasetKey, initializeImages, resetImages]);
 
   useEffect(() => {
-    return () => {
-      cleanupObservers();
-    };
-  }, [cleanupObservers]);
+    if (totalPages > 0 && selectedPageIndex >= 0 && selectedPageIndex < totalPages) {
+      loadPage(selectedPageIndex);
+      preloadAdjacentPages(selectedPageIndex);
+    }
+  }, [selectedPageIndex, totalPages, loadPage, preloadAdjacentPages]);
+
+  useEffect(() => {
+    if (totalPages > 0 && selectedPageIndex === 0 && !pagesData.has(0)) {
+      loadPage(0);
+      preloadAdjacentPages(0);
+    }
+  }, [totalPages, selectedPageIndex, loadPage, preloadAdjacentPages, pagesData]);
 
   return {
-    allImagePages,
+    totalPages,
     loading,
-    currentPageIndex,
-    getCurrentImagePages,
-    hasMorePages,
-    loadNextPage,
+    getPageData,
+    loadPage,
+    preloadAdjacentPages,
     resetImages,
     initializeImages,
-    registerPageElement: registerPageElementWithCallback
+    hasPages: totalPages > 0,
+    isPageLoaded: (pageIndex: number) => pagesData.has(pageIndex)
   };
 }
