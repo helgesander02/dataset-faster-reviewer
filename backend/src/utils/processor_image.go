@@ -6,6 +6,8 @@ import (
 	"image"
 	"log"
 	"os"
+	"runtime"
+	"sync"
 
 	_ "image/gif"
 	_ "image/jpeg"
@@ -15,16 +17,38 @@ import (
 	"github.com/nfnt/resize"
 )
 
+var maxWorkers = runtime.NumCPU()
+
 func CompressImageSetToBase64(imagpathSet []string) []string {
 	var base64Images []string
-	for _, imgPath := range imagpathSet {
-		base64Image, err := CompressImageToBase64(imgPath)
-		if err != nil {
-			log.Printf("Failed to compress image %s: %v", imgPath, err)
-			continue
-		}
-		base64Images = append(base64Images, base64Image)
+	
+	sem := make(chan struct{}, maxWorkers)
+	var mu sync.Mutex
+	var wg sync.WaitGroup
+	
+	base64Images = make([]string, len(imagpathSet))
+	
+	for i, imgPath := range imagpathSet {
+		wg.Add(1)
+		go func(index int, path string) {
+			defer wg.Done()
+			
+			sem <- struct{}{}        
+			defer func() { <-sem }() 
+			
+			base64Image, err := CompressImageToBase64(path)
+			if err != nil {
+				log.Printf("Failed to compress image %s: %v", path, err)
+				base64Image = ""
+			}
+			
+			mu.Lock()
+			base64Images[index] = base64Image
+			mu.Unlock()
+		}(i, imgPath)
 	}
+	
+	wg.Wait()
 	return base64Images
 }
 
@@ -47,7 +71,10 @@ func CompressImageToBase64(imgPath string) (string, error) {
 		return "", err
 	}
 
-	resizedImg := resize.Resize(uint(maxWidth), 0, decodedImg, resize.Lanczos3)
+	resizedImg := resize.Resize(uint(maxWidth), 0, decodedImg, resize.Bilinear)
+	
+	decodedImg = nil
+	runtime.GC()
 
 	var buf bytes.Buffer
 	opts := &webp.Options{Lossless: false, Quality: quality}
