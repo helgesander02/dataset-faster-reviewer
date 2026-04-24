@@ -1,0 +1,23 @@
+server:
+  port: "8080"
+  host: "localhost"
+
+static:
+  root_folder: "/app/example_root"
+  backup_folder: "/app/backups"
+
+database:
+  host: ""
+  port: ""
+  username: ""
+  password: ""
+  database: ""
+
+logging:
+  level: "info"
+  format: "console"
+
+cors:
+  allowed_origins: ["http://localhost:3000"]
+  allowed_methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+  allowed_headers: ["*"]

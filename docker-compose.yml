@@ -1,0 +1,77 @@
+services:
+  traefik:
+    image: traefik:v3.0
+    container_name: pii-verifier-traefik
+    command:
+      - "--api.insecure=true"
+      - "--api.dashboard=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker.network=pii-verifier-network"
+      - "--entrypoints.web.address=:80"
+      - "--log.level=${TRAEFIK_LOG_LEVEL:-INFO}"
+      - "--accesslog=true"
+    ports:
+      - "${TRAEFIK_PORT:-3000}:80"
+      # Traefik dashboard (8080) not exposed - use: docker exec -it pii-verifier-traefik sh
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    image: pii-verifier-frontend:latest
+    container_name: pii-verifier-frontend
+    environment:
+      - NODE_ENV=${NODE_ENV:-production}
+      - NEXT_PUBLIC_API_BASE_URL=${NEXT_PUBLIC_API_BASE_URL:-}
+      - NEXT_PUBLIC_IMAGES_PER_PAGE=${NEXT_PUBLIC_IMAGES_PER_PAGE:-9}
+      - NEXT_PUBLIC_DATASET_PER_PAGE=${NEXT_PUBLIC_DATASET_PER_PAGE:-100}
+      - NEXT_PUBLIC_JOB_REFRESH_INTERVAL=${NEXT_PUBLIC_JOB_REFRESH_INTERVAL:-60000}
+      - NEXT_PUBLIC_ENABLE_RETRY=${NEXT_PUBLIC_ENABLE_RETRY:-true}
+      - NEXT_PUBLIC_MAX_RETRIES=${NEXT_PUBLIC_MAX_RETRIES:-2}
+    depends_on:
+      - backend
+    networks:
+      - app-network
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend.rule=PathPrefix(`/`)"
+      - "traefik.http.routers.frontend.entrypoints=web"
+      - "traefik.http.routers.frontend.priority=1"
+      - "traefik.http.services.frontend.loadbalancer.server.port=3000"
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: pii-verifier-backend:latest
+    container_name: pii-verifier-backend
+    environment:
+      - GIN_MODE=${GIN_MODE:-release}
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-http://localhost:3000}
+    volumes:
+      - ${DATA_ROOT_PATH:-./data/example_root}:/app/example_root
+      - ${BACKUP_PATH:-./data/backups}:/app/backups
+    # Ports not exposed externally for security
+    # pprof (6060) - use: docker exec -it pii-verifier-backend sh -c "apk add curl && curl localhost:6060/debug/pprof/"
+    # or port forward: docker run -it --rm --network container:pii-verifier-backend alpine/curl http://localhost:6060/debug/pprof/
+    networks:
+      - app-network
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.backend.rule=PathPrefix(`/api`)"
+      - "traefik.http.routers.backend.entrypoints=web"
+      - "traefik.http.routers.backend.priority=2"
+      - "traefik.http.services.backend.loadbalancer.server.port=8080"
+
+networks:
+  app-network:
+    driver: bridge
+    name: pii-verifier-network

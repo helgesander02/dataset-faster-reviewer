@@ -1,0 +1,138 @@
+@import "tailwindcss";
+
+/* ==================== Theme Configuration ==================== */
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  /* Base colors */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  
+  /* Primary colors (Blue) */
+  --color-primary: #3b82f6;
+  --color-primary-hover: #2563eb;
+  --color-primary-active: #1d4ed8;
+  --color-on-primary: #ffffff;
+  
+  /* Success colors (Green) */
+  --color-success: #10b981;
+  --color-success-hover: #059669;
+  --color-on-success: #ffffff;
+  
+  /* Error colors (Red) */
+  --color-error: #ef4444;
+  --color-error-hover: #dc2626;
+  --color-on-error: #ffffff;
+  
+  /* Font families */
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  
+  /* Shadows */
+  --shadow-card: 0 2px 4px rgba(0, 0, 0, 0.1);
+  --shadow-card-hover: 0 8px 16px rgba(0, 0, 0, 0.15);
+  --shadow-selected: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+/* ==================== Base Styles ==================== */
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* ==================== Focus Styles ==================== */
+
+*:focus {
+  outline: none;
+}
+
+*:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* ==================== Utility Layers ==================== */
+
+@layer components {
+  /* Button Base */
+  .btn-base {
+    @apply inline-flex items-center justify-center gap-2;
+    @apply px-4 py-2 rounded-md;
+    @apply font-medium text-sm;
+    @apply transition-all duration-200;
+    @apply focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2;
+    @apply disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  /* Card Base */
+  .card-base {
+    @apply bg-white rounded-lg border border-gray-200;
+    @apply transition-shadow duration-200;
+    box-shadow: var(--shadow-card);
+  }
+
+  .card-base:hover {
+    box-shadow: var(--shadow-card-hover);
+  }
+
+  /* Focus Ring */
+  .focus-ring {
+    @apply focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500;
+  }
+
+  /* Selected State */
+  .selected-state {
+    @apply border-blue-500 bg-blue-50;
+    box-shadow: var(--shadow-selected);
+  }
+}
+
+@layer utilities {
+  /* Screen Reader Only */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
+
+  /* Skeleton Animation */
+  .skeleton {
+    @apply animate-pulse bg-gray-200 rounded;
+  }
+
+  /* Spinner Animation */
+  .spinner {
+    animation: spin 1s linear infinite;
+  }
+}
+
+/* ==================== Animations ==================== */
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
